@@ -1,0 +1,31 @@
+{
+    "$schema": "https://www.schemastore.org/package.json",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vite build",
+        "dev": "vite"
+    },
+    "dependencies": {
+        "@primeuix/themes": "^2.0.0",
+        "axios": "^1.7.0",
+        "chart.js": "^4.4.0",
+        "pinia": "^2.2.0",
+        "primeicons": "^7.0.0",
+        "primevue": "^4.5.4",
+        "tailwindcss-primeui": "^0.6.0",
+        "vue": "^3.4.34",
+        "vue-router": "^4.4.0"
+    },
+    "devDependencies": {
+        "@primevue/auto-import-resolver": "^4.3.1",
+        "@tailwindcss/vite": "^4.1.17",
+        "@vitejs/plugin-vue": "^6.0.0",
+        "concurrently": "^9.0.1",
+        "laravel-vite-plugin": "^3.0.0",
+        "sass": "^1.55.0",
+        "tailwindcss": "^4.1.17",
+        "unplugin-vue-components": "^0.27.3",
+        "vite": "^8.0.0"
+    }
+}
