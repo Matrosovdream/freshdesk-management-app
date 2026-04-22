@@ -16,16 +16,19 @@ class UsersSeeder extends Seeder
                 'email' => 'admin@example.test',
                 'name'  => 'Super Admin',
                 'role'  => 'superadmin',
+                'pin'   => '9999',
             ],
             [
                 'email' => 'manager@example.test',
                 'name'  => 'Team Manager',
                 'role'  => 'manager',
+                'pin'   => '8888',
             ],
             [
                 'email' => 'customer@example.test',
                 'name'  => 'Test Customer',
                 'role'  => 'customer',
+                'pin'   => '7777',
             ],
         ];
 
@@ -35,6 +38,7 @@ class UsersSeeder extends Seeder
                 [
                     'name'              => $u['name'],
                     'password'          => Hash::make('password'),
+                    'pin'               => Hash::make($u['pin']),
                     'is_active'         => true,
                     'email_verified_at' => now(),
                 ],

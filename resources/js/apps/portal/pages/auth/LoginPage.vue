@@ -9,6 +9,7 @@ import TabPanels from 'primevue/tabpanels';
 import TabPanel from 'primevue/tabpanel';
 import InputText from 'primevue/inputtext';
 import Password from 'primevue/password';
+import InputOtp from 'primevue/inputotp';
 import Button from 'primevue/button';
 import Message from 'primevue/message';
 
@@ -21,70 +22,63 @@ const route = useRoute();
 const router = useRouter();
 const toast = useToast();
 
-const activeTab = ref('password');
+const activeTab = ref('email');
 
-const passwordForm = reactive({ email: '', password: '' });
-const magicForm = reactive({ email: '' });
+const emailForm = reactive({ email: '', password: '' });
+const pinForm = reactive({ pin: '' });
 
 const errors = reactive({});
 const generalError = ref('');
 const loading = ref(false);
-const magicLoading = ref(false);
+const pinLoading = ref(false);
 
-async function submitPassword() {
-    errors.email = null;
-    errors.password = null;
+function redirectAfterLogin() {
+    const redirect = route.query.redirect && typeof route.query.redirect === 'string'
+        ? route.query.redirect
+        : { name: 'portal.home' };
+    router.push(redirect);
+}
+
+function handleLoginError(e) {
+    const status = e?.response?.status;
+    const data = e?.response?.data;
+    if (status === 422 && data?.errors) {
+        Object.assign(errors, data.errors);
+        if (data.errors.credentials) generalError.value = data.errors.credentials[0] || data.errors.credentials;
+    } else if (status === 401) {
+        generalError.value = 'Invalid credentials.';
+    } else if (status === 403) {
+        generalError.value = 'This account is disabled. Contact support.';
+    } else {
+        generalError.value = 'Something went wrong. Please try again.';
+    }
+}
+
+async function submitEmail() {
+    Object.keys(errors).forEach((k) => delete errors[k]);
     generalError.value = '';
     loading.value = true;
     try {
-        await auth.login(passwordForm);
-        const redirect = route.query.redirect && typeof route.query.redirect === 'string'
-            ? route.query.redirect
-            : { name: 'portal.home' };
-        router.push(redirect);
+        await auth.login({ email: emailForm.email, password: emailForm.password });
+        redirectAfterLogin();
     } catch (e) {
-        const status = e?.response?.status;
-        const data = e?.response?.data;
-        if (status === 422 && data?.errors) {
-            Object.assign(errors, data.errors);
-        } else if (status === 401) {
-            generalError.value = 'Email or password is incorrect.';
-        } else if (status === 403) {
-            generalError.value = 'This account is disabled. Contact support.';
-        } else {
-            generalError.value = 'Something went wrong. Please try again.';
-        }
+        handleLoginError(e);
     } finally {
         loading.value = false;
     }
 }
 
-async function submitMagic() {
-    errors.magicEmail = null;
-    magicLoading.value = true;
+async function submitPin() {
+    Object.keys(errors).forEach((k) => delete errors[k]);
+    generalError.value = '';
+    pinLoading.value = true;
     try {
-        await auth.magicLinkSend(magicForm.email);
-        toast.add({
-            severity: 'success',
-            summary: 'Check your inbox',
-            detail: "If an account exists, we've sent a link.",
-            life: 5000,
-        });
+        await auth.login({ pin: pinForm.pin });
+        redirectAfterLogin();
     } catch (e) {
-        const data = e?.response?.data;
-        if (data?.errors?.email) {
-            errors.magicEmail = data.errors.email;
-        } else {
-            // Deliberate: same generic message to prevent enumeration.
-            toast.add({
-                severity: 'success',
-                summary: 'Check your inbox',
-                detail: "If an account exists, we've sent a link.",
-                life: 5000,
-            });
-        }
+        handleLoginError(e);
     } finally {
-        magicLoading.value = false;
+        pinLoading.value = false;
     }
 }
 </script>
@@ -98,13 +92,13 @@ async function submitMagic() {
 
         <Tabs v-model:value="activeTab">
             <TabList>
-                <Tab value="password">Password</Tab>
-                <Tab value="magic">Email me a link</Tab>
+                <Tab value="email">Email</Tab>
+                <Tab value="pin">PIN</Tab>
             </TabList>
 
             <TabPanels>
-                <TabPanel value="password">
-                    <form class="space-y-3" @submit.prevent="submitPassword">
+                <TabPanel value="email">
+                    <form class="space-y-3" @submit.prevent="submitEmail">
                         <Message v-if="generalError" severity="error" :closable="false">
                             {{ generalError }}
                         </Message>
@@ -113,7 +107,7 @@ async function submitMagic() {
                             <label class="block text-sm text-gray-700 mb-1" for="login-email">Email</label>
                             <InputText
                                 id="login-email"
-                                v-model="passwordForm.email"
+                                v-model="emailForm.email"
                                 type="email"
                                 autocomplete="email"
                                 class="w-full"
@@ -126,7 +120,7 @@ async function submitMagic() {
                             <label class="block text-sm text-gray-700 mb-1" for="login-password">Password</label>
                             <Password
                                 id="login-password"
-                                v-model="passwordForm.password"
+                                v-model="emailForm.password"
                                 toggleMask
                                 :feedback="false"
                                 autocomplete="current-password"
@@ -141,22 +135,23 @@ async function submitMagic() {
                     </form>
                 </TabPanel>
 
-                <TabPanel value="magic">
-                    <form class="space-y-3" @submit.prevent="submitMagic">
-                        <p class="text-sm text-gray-500">We'll email you a one-time sign-in link.</p>
-                        <div>
-                            <label class="block text-sm text-gray-700 mb-1" for="magic-email">Email</label>
-                            <InputText
-                                id="magic-email"
-                                v-model="magicForm.email"
-                                type="email"
-                                autocomplete="email"
-                                class="w-full"
-                                required
-                            />
-                            <p v-if="errors.magicEmail" class="text-xs text-red-600 mt-1">{{ errors.magicEmail?.[0] || errors.magicEmail }}</p>
-                        </div>
-                        <Button type="submit" label="Send me a link" class="w-full" :loading="magicLoading" :disabled="magicLoading" />
+                <TabPanel value="pin">
+                    <form class="space-y-4 flex flex-col items-center" @submit.prevent="submitPin">
+                        <Message v-if="generalError" severity="error" :closable="false" class="w-full">
+                            {{ generalError }}
+                        </Message>
+
+                        <p class="text-sm text-gray-500">Enter your 4-digit PIN.</p>
+                        <InputOtp v-model="pinForm.pin" :length="4" integerOnly />
+                        <p v-if="errors.pin" class="text-xs text-red-600">{{ errors.pin?.[0] || errors.pin }}</p>
+
+                        <Button
+                            type="submit"
+                            label="Sign in"
+                            class="w-full"
+                            :loading="pinLoading"
+                            :disabled="pinLoading || pinForm.pin.length !== 4"
+                        />
                     </form>
                 </TabPanel>
             </TabPanels>

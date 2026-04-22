@@ -39,12 +39,12 @@ export const useAuth = defineStore('portal-auth', {
             }
         },
 
-        async login({ email, password }) {
+        async login(payload) {
             this.loading = true;
             this.error = null;
             try {
                 await ensureCsrf();
-                await http.post('/api/v1/portal/auth/login', { email, password });
+                await http.post('/api/v1/portal/auth/login', payload);
                 const { data } = await http.get('/api/v1/portal/auth/me');
                 this.user = data?.data ?? data ?? null;
                 return this.user;
