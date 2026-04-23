@@ -8,6 +8,8 @@ class Group extends Model
 {
     protected $guarded = ['id'];
 
+    protected $appends = ['agent_count'];
+
     protected $casts = [
         'agent_ids'          => 'array',
         'auto_ticket_assign' => 'boolean',
@@ -25,5 +27,10 @@ class Group extends Model
     public function managers()
     {
         return $this->belongsToMany(User::class, 'manager_group_scopes')->withTimestamps();
+    }
+
+    public function getAgentCountAttribute(): int
+    {
+        return \is_array($this->agent_ids) ? \count($this->agent_ids) : 0;
     }
 }

@@ -8,6 +8,8 @@ class Agent extends Model
 {
     protected $guarded = ['id'];
 
+    protected $appends = ['last_login_at', 'avatar_url'];
+
     protected $casts = [
         'available'      => 'boolean',
         'occasional'     => 'boolean',
@@ -28,5 +30,15 @@ class Agent extends Model
     public function timeEntries()
     {
         return $this->hasMany(TimeEntry::class);
+    }
+
+    public function getLastLoginAtAttribute()
+    {
+        return $this->fd_updated_at;
+    }
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        return $this->payload['avatar']['avatar_url'] ?? null;
     }
 }

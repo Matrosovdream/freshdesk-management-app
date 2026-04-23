@@ -11,6 +11,8 @@ class Ticket extends Model
 
     protected $guarded = ['id'];
 
+    protected $appends = ['display_id'];
+
     protected $casts = [
         'to_emails'       => 'array',
         'cc_emails'       => 'array',
@@ -57,5 +59,10 @@ class Ticket extends Model
     public function timeEntries()
     {
         return $this->hasMany(TimeEntry::class);
+    }
+
+    public function getDisplayIdAttribute(): ?int
+    {
+        return $this->freshdesk_id !== null ? (int) $this->freshdesk_id : null;
     }
 }
