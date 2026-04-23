@@ -2,11 +2,10 @@
 
 namespace App\Actions\Tickets;
 
-final class OutboundEmailAction
+/**
+ * Legacy name kept for backwards compatibility — controller references
+ * CreateOutboundEmailAction. This file remains as a thin alias.
+ */
+final class OutboundEmailAction extends CreateOutboundEmailAction
 {
-    public function handle(array $data = []): array
-    {
-        // TODO: implement.
-        return [];
-    }
 }

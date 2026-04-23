@@ -27,21 +27,21 @@ final class PortalLoginAction
             ]);
         }
 
-        if (! $user->hasRole('customer')) {
-            throw ValidationException::withMessages([
-                'credentials' => ['Not authorised for the portal.'],
-            ]);
-        }
-
         Auth::guard('web')->login($user, (bool) ($data['remember'] ?? false));
         $user->forceFill(['last_login_at' => now()])->save();
-        request()->session()->regenerate();
+        if (request()->hasSession()) {
+            request()->session()->regenerate();
+        }
+
+        $roles = $user->roles->pluck('slug')->all();
+        $isStaff = \in_array('superadmin', $roles, true) || \in_array('manager', $roles, true);
 
         return [
-            'id'    => $user->id,
-            'name'  => $user->name,
-            'email' => $user->email,
-            'roles' => $user->roles->pluck('slug')->all(),
+            'id'          => $user->id,
+            'name'        => $user->name,
+            'email'       => $user->email,
+            'roles'       => $roles,
+            'redirect_to' => $isStaff ? '/dashboard' : '/portal',
         ];
     }
 
