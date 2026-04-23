@@ -1,7 +1,6 @@
 <script setup>
 import { reactive, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { useToast } from 'primevue/usetoast';
 import Tabs from 'primevue/tabs';
 import TabList from 'primevue/tablist';
 import Tab from 'primevue/tab';
@@ -10,6 +9,7 @@ import TabPanel from 'primevue/tabpanel';
 import InputText from 'primevue/inputtext';
 import Password from 'primevue/password';
 import InputOtp from 'primevue/inputotp';
+import Checkbox from 'primevue/checkbox';
 import Button from 'primevue/button';
 import Message from 'primevue/message';
 
@@ -20,26 +20,21 @@ const auth = useAuth();
 const config = useConfig();
 const route = useRoute();
 const router = useRouter();
-const toast = useToast();
 
 const activeTab = ref('email');
-
-const emailForm = reactive({ email: '', password: '' });
+const emailForm = reactive({ email: '', password: '', remember: false });
 const pinForm = reactive({ pin: '' });
 
 const errors = reactive({});
 const generalError = ref('');
 const loading = ref(false);
-const pinLoading = ref(false);
 
-function redirectAfterLogin() {
-    const redirect = route.query.redirect && typeof route.query.redirect === 'string'
-        ? route.query.redirect
-        : { name: 'portal.home' };
-    router.push(redirect);
+function resetErrors() {
+    Object.keys(errors).forEach((k) => delete errors[k]);
+    generalError.value = '';
 }
 
-function handleLoginError(e) {
+function handleError(e) {
     const status = e?.response?.status;
     const data = e?.response?.data;
     if (status === 422 && data?.errors) {
@@ -54,120 +49,134 @@ function handleLoginError(e) {
     }
 }
 
-async function submitEmail() {
-    Object.keys(errors).forEach((k) => delete errors[k]);
-    generalError.value = '';
+function redirectAfterLogin(user) {
+    // Staff (superadmin/manager) go to the dashboard SPA.
+    // Customers (or anyone else) stay in the portal SPA.
+    const isStaff = Array.isArray(user?.roles)
+        && user.roles.some((r) => r === 'superadmin' || r === 'manager' || r?.slug === 'superadmin' || r?.slug === 'manager');
+
+    const targetFromQuery = typeof route.query.redirect === 'string' ? route.query.redirect : null;
+
+    if (isStaff) {
+        // Full page navigation — dashboard is a separate SPA bundle.
+        window.location.assign(targetFromQuery?.startsWith('/dashboard') ? targetFromQuery : '/dashboard');
+        return;
+    }
+
+    router.push(
+        targetFromQuery && !targetFromQuery.startsWith('/dashboard')
+            ? targetFromQuery
+            : { name: 'portal.home' },
+    );
+}
+
+async function submit(payload) {
+    resetErrors();
     loading.value = true;
     try {
-        await auth.login({ email: emailForm.email, password: emailForm.password });
-        redirectAfterLogin();
+        const user = await auth.login(payload);
+        redirectAfterLogin(user);
     } catch (e) {
-        handleLoginError(e);
+        handleError(e);
     } finally {
         loading.value = false;
     }
 }
 
-async function submitPin() {
-    Object.keys(errors).forEach((k) => delete errors[k]);
-    generalError.value = '';
-    pinLoading.value = true;
-    try {
-        await auth.login({ pin: pinForm.pin });
-        redirectAfterLogin();
-    } catch (e) {
-        handleLoginError(e);
-    } finally {
-        pinLoading.value = false;
-    }
-}
+const submitEmail = () => submit({
+    email: emailForm.email,
+    password: emailForm.password,
+    remember: emailForm.remember,
+});
+const submitPin = () => submit({ pin: pinForm.pin });
 </script>
 
 <template>
     <div>
-        <header class="text-center mb-5">
-            <h2 class="text-lg font-semibold text-gray-800">Sign in</h2>
-            <p class="text-sm text-gray-500 mt-1">Sign in to submit and track your requests.</p>
-        </header>
+        <div>
+            <div class="text-center mb-6">
+                <div class="text-surface-900 dark:text-surface-0 text-xl font-semibold mb-1">Sign in</div>
+                <span class="text-muted-color text-sm">Portal, dashboard, or support — one sign-in.</span>
+            </div>
 
-        <Tabs v-model:value="activeTab">
-            <TabList>
-                <Tab value="email">Email</Tab>
-                <Tab value="pin">PIN</Tab>
-            </TabList>
+            <Tabs v-model:value="activeTab">
+                <TabList>
+                    <Tab value="email">Email</Tab>
+                    <Tab value="pin">PIN</Tab>
+                </TabList>
 
-            <TabPanels>
-                <TabPanel value="email">
-                    <form class="space-y-3" @submit.prevent="submitEmail">
-                        <Message v-if="generalError" severity="error" :closable="false">
-                            {{ generalError }}
-                        </Message>
+                <TabPanels>
+                    <TabPanel value="email">
+                        <form @submit.prevent="submitEmail" class="flex flex-col gap-3">
+                            <Message v-if="generalError" severity="error" :closable="false">{{ generalError }}</Message>
 
-                        <div>
-                            <label class="block text-sm text-gray-700 mb-1" for="login-email">Email</label>
-                            <InputText
-                                id="login-email"
-                                v-model="emailForm.email"
-                                type="email"
-                                autocomplete="email"
+                            <div>
+                                <label class="block text-sm font-medium mb-1" for="login-email">Email</label>
+                                <InputText
+                                    id="login-email"
+                                    v-model="emailForm.email"
+                                    type="email"
+                                    autocomplete="email"
+                                    class="w-full"
+                                    required
+                                />
+                                <p v-if="errors.email" class="text-xs text-red-500 mt-1">{{ errors.email?.[0] || errors.email }}</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium mb-1" for="login-password">Password</label>
+                                <Password
+                                    id="login-password"
+                                    v-model="emailForm.password"
+                                    :toggleMask="true"
+                                    :feedback="false"
+                                    autocomplete="current-password"
+                                    fluid
+                                    required
+                                />
+                                <p v-if="errors.password" class="text-xs text-red-500 mt-1">{{ errors.password?.[0] || errors.password }}</p>
+                            </div>
+
+                            <div class="flex items-center justify-between">
+                                <label class="flex items-center gap-2 text-sm">
+                                    <Checkbox v-model="emailForm.remember" binary /> Remember me
+                                </label>
+                                <router-link :to="{ name: 'portal.forgot' }" class="text-sm text-primary hover:underline">
+                                    Forgot password?
+                                </router-link>
+                            </div>
+
+                            <Button type="submit" label="Sign in" :loading="loading" class="w-full" />
+                        </form>
+                    </TabPanel>
+
+                    <TabPanel value="pin">
+                        <form @submit.prevent="submitPin" class="flex flex-col items-center gap-4 py-2">
+                            <Message v-if="generalError" severity="error" :closable="false" class="w-full">{{ generalError }}</Message>
+                            <p class="text-muted-color text-sm">Enter your 4-digit PIN</p>
+                            <InputOtp v-model="pinForm.pin" :length="4" integerOnly />
+                            <p v-if="errors.pin" class="text-xs text-red-500">{{ errors.pin?.[0] || errors.pin }}</p>
+                            <Button
+                                type="submit"
+                                label="Sign in"
+                                :loading="loading"
+                                :disabled="pinForm.pin.length !== 4"
                                 class="w-full"
-                                required
                             />
-                            <p v-if="errors.email" class="text-xs text-red-600 mt-1">{{ errors.email?.[0] || errors.email }}</p>
-                        </div>
+                        </form>
+                    </TabPanel>
+                </TabPanels>
+            </Tabs>
 
-                        <div>
-                            <label class="block text-sm text-gray-700 mb-1" for="login-password">Password</label>
-                            <Password
-                                id="login-password"
-                                v-model="emailForm.password"
-                                toggleMask
-                                :feedback="false"
-                                autocomplete="current-password"
-                                class="w-full"
-                                inputClass="w-full"
-                                required
-                            />
-                            <p v-if="errors.password" class="text-xs text-red-600 mt-1">{{ errors.password?.[0] || errors.password }}</p>
-                        </div>
-
-                        <Button type="submit" label="Sign in" class="w-full" :loading="loading" :disabled="loading" />
-                    </form>
-                </TabPanel>
-
-                <TabPanel value="pin">
-                    <form class="space-y-4 flex flex-col items-center" @submit.prevent="submitPin">
-                        <Message v-if="generalError" severity="error" :closable="false" class="w-full">
-                            {{ generalError }}
-                        </Message>
-
-                        <p class="text-sm text-gray-500">Enter your 4-digit PIN.</p>
-                        <InputOtp v-model="pinForm.pin" :length="4" integerOnly />
-                        <p v-if="errors.pin" class="text-xs text-red-600">{{ errors.pin?.[0] || errors.pin }}</p>
-
-                        <Button
-                            type="submit"
-                            label="Sign in"
-                            class="w-full"
-                            :loading="pinLoading"
-                            :disabled="pinLoading || pinForm.pin.length !== 4"
-                        />
-                    </form>
-                </TabPanel>
-            </TabPanels>
-        </Tabs>
-
-        <div class="mt-4 flex flex-col items-center gap-2 text-sm">
-            <router-link :to="{ name: 'portal.forgot' }" class="text-primary-600 hover:underline">
-                Forgot password?
-            </router-link>
-            <router-link
-                v-if="config.allowPublicRegistration"
-                :to="{ name: 'portal.register' }"
-                class="text-gray-600 hover:underline"
-            >
-                Create an account
-            </router-link>
+            <div class="mt-4 flex flex-col items-center gap-2 text-sm">
+                <router-link
+                    v-if="config.allowPublicRegistration"
+                    :to="{ name: 'portal.register' }"
+                    class="text-muted-color hover:underline"
+                >
+                    Create an account
+                </router-link>
+            </div>
         </div>
     </div>
 </template>

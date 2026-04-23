@@ -1,8 +1,41 @@
 <script setup>
+import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 import { useLayout } from '@/layout/composables/layout';
+import { useAuth } from '@/stores/auth';
+import { useUi } from '@/stores/ui';
 import AppConfigurator from './AppConfigurator.vue';
+import Menu from 'primevue/menu';
 
 const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
+const auth = useAuth();
+const ui = useUi();
+const router = useRouter();
+
+const userMenu = ref();
+const userMenuItems = [
+    {
+        label: 'Profile',
+        icon: 'pi pi-user',
+        command: () => router.push('/profile'),
+    },
+    { separator: true },
+    {
+        label: 'Sign out',
+        icon: 'pi pi-sign-out',
+        command: async () => {
+            try {
+                await auth.logout();
+            } finally {
+                router.push('/login');
+            }
+        },
+    },
+];
+
+function toggleUserMenu(event) {
+    userMenu.value.toggle(event);
+}
 </script>
 
 <template>
@@ -60,18 +93,12 @@ const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
 
             <div class="layout-topbar-menu hidden lg:block">
                 <div class="layout-topbar-menu-content">
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-calendar"></i>
-                        <span>Calendar</span>
-                    </button>
-                    <button type="button" class="layout-topbar-action">
-                        <i class="pi pi-inbox"></i>
-                        <span>Messages</span>
-                    </button>
-                    <button type="button" class="layout-topbar-action">
+                    <button type="button" class="layout-topbar-action" @click="toggleUserMenu" aria-haspopup="true" aria-controls="topbar_user_menu">
                         <i class="pi pi-user"></i>
-                        <span>Profile</span>
+                        <span class="ml-2">{{ auth.user?.name || auth.user?.email || 'Account' }}</span>
+                        <i class="pi pi-angle-down ml-1"></i>
                     </button>
+                    <Menu ref="userMenu" id="topbar_user_menu" :model="userMenuItems" :popup="true" />
                 </div>
             </div>
         </div>

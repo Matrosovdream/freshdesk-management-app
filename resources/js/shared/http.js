@@ -1,9 +1,5 @@
 import axios from 'axios';
 
-/**
- * Read a cookie value by name. Used to grab the XSRF-TOKEN cookie
- * that Laravel Sanctum sets so we can forward it as a header.
- */
 function readCookie(name) {
     if (typeof document === 'undefined') return null;
     const match = document.cookie
@@ -25,9 +21,6 @@ export const http = axios.create({
     },
 });
 
-// Attach the XSRF token manually too — some axios versions don't honour
-// `withXSRFToken` for non-same-origin requests and we want the header set
-// regardless.
 http.interceptors.request.use((config) => {
     const token = readCookie('XSRF-TOKEN');
     if (token) {
@@ -38,10 +31,6 @@ http.interceptors.request.use((config) => {
 
 let csrfPromise = null;
 
-/**
- * Hit Sanctum's CSRF endpoint once per page-load so subsequent mutating
- * requests carry a valid XSRF-TOKEN cookie.
- */
 export function ensureCsrf() {
     if (!csrfPromise) {
         csrfPromise = http.get('/sanctum/csrf-cookie').catch((err) => {
@@ -52,13 +41,24 @@ export function ensureCsrf() {
     return csrfPromise;
 }
 
-/**
- * 401 → not authenticated: clear local auth, redirect to login (except from
- *       the bootstrap call or the login page itself — those handle it inline).
- * 419 → CSRF token mismatch: refresh cookie and retry once.
- */
+export function rateLimitRemainingFromHeaders(headers) {
+    const remaining = headers?.['x-ratelimit-remaining'];
+    const limit = headers?.['x-ratelimit-limit'];
+    if (remaining == null) return null;
+    return { remaining: Number(remaining), limit: limit != null ? Number(limit) : null };
+}
+
+let rateLimitHandler = null;
+export function onRateLimit(cb) {
+    rateLimitHandler = cb;
+}
+
 http.interceptors.response.use(
-    (response) => response,
+    (response) => {
+        const rl = rateLimitRemainingFromHeaders(response.headers);
+        if (rl && rateLimitHandler) rateLimitHandler(rl);
+        return response;
+    },
     async (error) => {
         const status = error?.response?.status;
         const config = error?.config || {};
@@ -71,20 +71,21 @@ http.interceptors.response.use(
         }
 
         if (status === 401 && !config.__silent401) {
-            // Let the auth store's getters flip to unauthenticated next tick.
-            // Redirect is handled by the router guard the next time the user
-            // navigates; pages that care can inspect error.response themselves.
             if (typeof window !== 'undefined') {
                 const path = window.location?.pathname || '';
-                const isAuthPage = /\/portal\/(login|register|forgot|reset|verify|magic)/.test(path);
-                if (!isAuthPage) {
-                    // Defer so the current call-stack can complete / log the error.
+                const isPortalAuthPage = /\/portal\/(login|register|forgot|reset|verify|magic)/.test(path);
+                if (!isPortalAuthPage) {
                     queueMicrotask(() => {
                         const redirect = encodeURIComponent(window.location.pathname + window.location.search);
                         window.location.assign(`/portal/login?redirect=${redirect}`);
                     });
                 }
             }
+        }
+
+        // 422 is left for the caller to handle — we normalize into error.validation
+        if (status === 422 && error.response?.data?.errors) {
+            error.validation = error.response.data.errors;
         }
 
         return Promise.reject(error);

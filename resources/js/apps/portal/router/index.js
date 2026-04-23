@@ -124,6 +124,12 @@ router.beforeEach(async (to) => {
     }
 
     if (to.meta.guest && auth.isAuthenticated) {
+        const roles = auth.user?.roles ?? [];
+        const isStaff = roles.some((r) => r === 'superadmin' || r === 'manager' || r?.slug === 'superadmin' || r?.slug === 'manager');
+        if (isStaff) {
+            window.location.assign('/dashboard');
+            return false;
+        }
         return { name: 'portal.home' };
     }
 

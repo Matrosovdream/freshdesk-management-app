@@ -4,6 +4,7 @@ import { computed } from 'vue';
 import AppFooter from './AppFooter.vue';
 import AppSidebar from './AppSidebar.vue';
 import AppTopbar from './AppTopbar.vue';
+import ToastBridge from '@/components/shared/ToastBridge.vue';
 
 const { layoutConfig, layoutState, hideMobileMenu } = useLayout();
 
@@ -31,4 +32,5 @@ const containerClass = computed(() => {
         <div class="layout-mask animate-fadein" @click="hideMobileMenu" />
     </div>
     <Toast />
+    <ToastBridge />
 </template>
