@@ -20,8 +20,8 @@ class InjectManagerScope
 
     private function groupIdsForManager($user): array
     {
-        if (method_exists($user, 'managerGroupScopes')) {
-            return $user->managerGroupScopes()->pluck('group_id')->all();
+        if (method_exists($user, 'managerGroups')) {
+            return $user->managerGroups()->pluck('groups.id')->all();
         }
 
         return [];

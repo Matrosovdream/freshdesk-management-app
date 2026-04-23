@@ -18,8 +18,12 @@ Route::prefix('auth')->name('auth.')->group(function () {
 });
 
 // --- Authenticated (superadmin | manager) ------------------------------------
-Route::middleware(['auth:sanctum', 'role:superadmin|manager'])->group(function () {
+Route::middleware(['auth:sanctum', 'role:superadmin|manager', 'manager.scope'])->group(function () {
     Route::get('/auth/me', [Admin\Auth\MeController::class, 'show'])->name('auth.me');
+    Route::post('/auth/logout-others', [Admin\ProfileController::class, 'logoutOthers'])->name('auth.logout_others');
+
+    Route::get('/profile', [Admin\ProfileController::class, 'show']);
+    Route::put('/profile', [Admin\ProfileController::class, 'update']);
 
     // Overview
     Route::get('/overview',          [Admin\OverviewController::class, 'index']);
@@ -111,6 +115,7 @@ Route::middleware(['auth:sanctum', 'role:superadmin|manager'])->group(function (
     Route::get('/business-hours', [Admin\Config\BusinessHoursController::class, 'index'])->middleware('right:tickets.view');
     Route::get('/sla-policies',   [Admin\Config\SlaPolicyController::class, 'index'])->middleware('right:reports.view');
     Route::get('/automations',    [Admin\Config\AutomationController::class, 'index'])->middleware('right:reports.view');
+    Route::get('/roles',          [Admin\Config\RoleController::class, 'index']);
 
     // System (superadmin only)
     Route::middleware('role:superadmin')->prefix('system')->group(function () {

@@ -13,6 +13,7 @@
         "pinia": "^2.2.0",
         "primeicons": "^7.0.0",
         "primevue": "^4.5.4",
+        "quill": "^2.0.3",
         "tailwindcss-primeui": "^0.6.0",
         "vue": "^3.4.34",
         "vue-router": "^4.4.0"
@@ -27,5 +28,8 @@
         "tailwindcss": "^4.1.17",
         "unplugin-vue-components": "^0.27.3",
         "vite": "^8.0.0"
+    },
+    "optionalDependencies": {
+        "@rolldown/binding-darwin-arm64": "^1.0.0-rc.16"
     }
 }

@@ -24,11 +24,14 @@ Route::prefix('auth')->name('auth.')->group(function () {
     Route::post('/reset',              [Portal\Auth\PasswordResetController::class, 'reset'])->name('reset');
 });
 
-// --- Authenticated (customer) ------------------------------------------------
-Route::middleware(['auth:sanctum', 'role:customer'])->group(function () {
+// --- Authenticated (any role) — identity endpoints used by the unified login -
+Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/auth/me',               [Portal\Auth\MeController::class, 'show'])->name('auth.me');
     Route::post('/auth/logout-others',   [Portal\Auth\SessionController::class, 'logoutOthers'])->name('auth.logout-others');
+});
 
+// --- Authenticated (customer) ------------------------------------------------
+Route::middleware(['auth:sanctum', 'role:customer'])->group(function () {
     Route::get('/home',                        [Portal\HomeController::class, 'index']);
 
     Route::get('/requests',                    [Portal\RequestController::class, 'index'])->middleware('right:portal.requests.view_own');

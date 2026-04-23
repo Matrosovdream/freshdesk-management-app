@@ -1,0 +1,122 @@
+[
+    {
+        "id": 6000300001,
+        "contact": {
+            "email": "ada.first@support.test",
+            "name": "Ada First",
+            "job_title": "Senior Support Engineer",
+            "language": "en",
+            "time_zone": "America/Los_Angeles"
+        },
+        "available": true,
+        "occasional": false,
+        "type": "support_agent",
+        "ticket_scope": 1,
+        "signature": "<p>Ada First<br>Senior Support Engineer</p>",
+        "group_ids": [6000400001, 6000400002],
+        "role_ids": [1],
+        "skill_ids": [101, 102],
+        "created_at": "2024-01-02T10:00:00Z",
+        "updated_at": "2026-04-01T09:00:00Z"
+    },
+    {
+        "id": 6000300002,
+        "contact": {
+            "email": "noah.wu@support.test",
+            "name": "Noah Wu",
+            "job_title": "Support Engineer",
+            "language": "en",
+            "time_zone": "America/New_York"
+        },
+        "available": true,
+        "occasional": false,
+        "type": "support_agent",
+        "ticket_scope": 1,
+        "signature": "<p>Noah Wu<br>Support Engineer</p>",
+        "group_ids": [6000400001],
+        "role_ids": [1],
+        "skill_ids": [101],
+        "created_at": "2024-03-18T13:20:00Z",
+        "updated_at": "2026-04-05T16:44:00Z"
+    },
+    {
+        "id": 6000300003,
+        "contact": {
+            "email": "lina.vega@support.test",
+            "name": "Lina Vega",
+            "job_title": "Billing Specialist",
+            "language": "en",
+            "time_zone": "Europe/London"
+        },
+        "available": true,
+        "occasional": false,
+        "type": "support_agent",
+        "ticket_scope": 2,
+        "signature": "<p>Lina Vega<br>Billing Specialist</p>",
+        "group_ids": [6000400003],
+        "role_ids": [1],
+        "skill_ids": [201],
+        "created_at": "2024-05-11T08:10:00Z",
+        "updated_at": "2026-04-08T18:00:00Z"
+    },
+    {
+        "id": 6000300004,
+        "contact": {
+            "email": "rafa.costa@support.test",
+            "name": "Rafa Costa",
+            "job_title": "Technical Support Lead",
+            "language": "en",
+            "time_zone": "Asia/Tokyo"
+        },
+        "available": true,
+        "occasional": false,
+        "type": "support_agent",
+        "ticket_scope": 1,
+        "signature": "<p>Rafa Costa<br>Technical Support Lead</p>",
+        "group_ids": [6000400002, 6000400004],
+        "role_ids": [1, 2],
+        "skill_ids": [101, 301],
+        "created_at": "2024-09-04T11:45:00Z",
+        "updated_at": "2026-04-12T21:40:00Z"
+    },
+    {
+        "id": 6000300005,
+        "contact": {
+            "email": "ima.hassan@support.test",
+            "name": "Ima Hassan",
+            "job_title": "Support Engineer",
+            "language": "en",
+            "time_zone": "Europe/London"
+        },
+        "available": false,
+        "occasional": false,
+        "type": "support_agent",
+        "ticket_scope": 1,
+        "signature": "<p>Ima Hassan<br>Support Engineer</p>",
+        "group_ids": [6000400003, 6000400004],
+        "role_ids": [1],
+        "skill_ids": [201, 301],
+        "created_at": "2025-01-17T14:00:00Z",
+        "updated_at": "2026-04-14T12:12:12Z"
+    },
+    {
+        "id": 6000300006,
+        "contact": {
+            "email": "tom.ng@support.test",
+            "name": "Tom Ng",
+            "job_title": "Support Engineer",
+            "language": "en",
+            "time_zone": "Asia/Tokyo"
+        },
+        "available": true,
+        "occasional": true,
+        "type": "support_agent",
+        "ticket_scope": 1,
+        "signature": "<p>Tom Ng<br>Support Engineer</p>",
+        "group_ids": [6000400004],
+        "role_ids": [1],
+        "skill_ids": [301],
+        "created_at": "2025-06-02T09:30:00Z",
+        "updated_at": "2026-04-18T01:02:03Z"
+    }
+]
