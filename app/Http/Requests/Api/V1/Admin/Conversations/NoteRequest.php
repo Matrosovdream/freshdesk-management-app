@@ -7,5 +7,12 @@ use Illuminate\Foundation\Http\FormRequest;
 class NoteRequest extends FormRequest
 {
     public function authorize(): bool { return true; }
-    public function rules(): array { return []; }
+
+    public function rules(): array
+    {
+        return [
+            'body'    => ['required', 'string'],
+            'private' => ['sometimes', 'boolean'],
+        ];
+    }
 }

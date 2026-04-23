@@ -7,5 +7,15 @@ use Illuminate\Foundation\Http\FormRequest;
 class ReplyRequest extends FormRequest
 {
     public function authorize(): bool { return true; }
-    public function rules(): array { return []; }
+
+    public function rules(): array
+    {
+        return [
+            'body'       => ['required', 'string'],
+            'from_email' => ['sometimes', 'nullable', 'email'],
+            'to_emails'  => ['sometimes', 'array'],
+            'cc_emails'  => ['sometimes', 'array'],
+            'bcc_emails' => ['sometimes', 'array'],
+        ];
+    }
 }
