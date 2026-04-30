@@ -15,10 +15,10 @@ services:
         condition: service_healthy
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.freshdesk.rule=Host(`freshdesk.devflip.io`)"
-      - "traefik.http.routers.freshdesk.entrypoints=websecure"
-      - "traefik.http.routers.freshdesk.tls.certresolver=letsencrypt"
-      - "traefik.http.services.freshdesk.loadbalancer.server.port=80"
+      - "traefik.http.routers.goapp.rule=Host(`${APP_DOMAIN}`)"
+      - "traefik.http.routers.goapp.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.goapp.entrypoints=websecure"
+      - "traefik.http.services.goapp.loadbalancer.server.port=8080"
 
   php-fpm:
     build:
