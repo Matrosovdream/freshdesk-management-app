@@ -23,6 +23,7 @@ final class UpdateManagerAction
         }
 
         AuditWriter::log('manager.updated', 'User', $u->id, $before, $u->only(['name', 'email', 'is_active']));
+        
         return $u->fresh(['roles', 'managerGroups'])->toArray();
     }
 }

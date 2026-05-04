@@ -21,6 +21,7 @@ final class RotateApiKeyAction
         ]);
 
         AuditWriter::log('api_key.rotated', 'ApiKey', $key->id, [], ['prefix' => $prefix]);
+        
         return ['id' => $key->id, 'prefix' => $prefix, 'plaintext' => $plain];
     }
 }

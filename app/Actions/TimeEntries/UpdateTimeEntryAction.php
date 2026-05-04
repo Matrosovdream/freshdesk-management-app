@@ -20,6 +20,7 @@ final class UpdateTimeEntryAction
         $entry->fill($patch)->save();
 
         AuditWriter::log('time_entry.updated', 'TimeEntry', $entry->id, $before, $entry->fresh()->toArray());
+        
         return $entry->fresh()->toArray();
     }
 }

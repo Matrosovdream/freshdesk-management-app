@@ -20,6 +20,7 @@ final class AssignTicketAction
         $ticket->save();
 
         AuditWriter::log('ticket.assigned', 'Ticket', $ticket->id, $before, $ticket->fresh()->toArray());
+       
         return $ticket->fresh(['responder'])->toArray();
     }
 }

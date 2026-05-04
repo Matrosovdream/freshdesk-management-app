@@ -9,6 +9,7 @@ final class GetSettingsAction
     public function handle(array $data = []): array
     {
         return Setting::orderBy('group')->orderBy('key')->get()->map(function ($s) {
+
             $value = $s->value;
             if ($s->type === 'boolean') $value = (bool) ($value === '1' || $value === 'true');
             if ($s->type === 'integer') $value = (int) $value;
@@ -22,6 +23,7 @@ final class GetSettingsAction
                 'description' => $s->description,
                 'label'       => \Illuminate\Support\Str::of($s->key)->replace('.', ' ')->title()->value(),
             ];
+            
         })->all();
     }
 }

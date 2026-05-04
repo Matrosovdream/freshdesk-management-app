@@ -12,6 +12,7 @@ final class GetTicketAction
     public function handle(array $data = []): array
     {
         $id = (int) ($data['id'] ?? 0);
+        
         $ticket = Ticket::with(['requester', 'responder', 'group', 'company'])->find($id);
         if (! $ticket) throw new NotFoundHttpException('Ticket not found.');
 

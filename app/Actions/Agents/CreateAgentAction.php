@@ -10,6 +10,7 @@ final class CreateAgentAction
     public function handle(array $data = []): array
     {
         $max = (int) Agent::max('freshdesk_id');
+
         $payload = array_intersect_key($data, array_flip([
             'email', 'name', 'job_title', 'language', 'time_zone', 'available',
             'occasional', 'type', 'ticket_scope', 'signature',
@@ -21,6 +22,7 @@ final class CreateAgentAction
 
         $a = Agent::create($payload);
         AuditWriter::log('agent.created', 'Agent', $a->id, [], $a->toArray());
+        
         return $a->toArray();
     }
 }

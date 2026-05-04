@@ -13,6 +13,7 @@ final class ReplyToTicketAction
     public function handle(array $data = []): array
     {
         $ticketId = (int) ($data['ticket_id'] ?? 0);
+
         $ticket = Ticket::find($ticketId);
         if (! $ticket) throw new NotFoundHttpException('Ticket not found.');
 
@@ -37,6 +38,7 @@ final class ReplyToTicketAction
         $ticket->save();
 
         AuditWriter::log('conversation.reply', 'Ticket', $ticket->id, [], ['conversation_id' => $conv->id]);
+        
         return $conv->toArray();
     }
 }

@@ -25,6 +25,7 @@ final class ImportContactsAction
         $failed   = 0;
 
         if ($file && is_file($file->getRealPath())) {
+            
             $fh = fopen($file->getRealPath(), 'r');
             $headers = fgetcsv($fh) ?: [];
             $headers = array_map(fn ($h) => strtolower(trim((string) $h)), $headers);
@@ -37,6 +38,7 @@ final class ImportContactsAction
                     if (! $email && ! $name) { $failed++; continue; }
 
                     $max = (int) Contact::max('freshdesk_id');
+
                     Contact::updateOrCreate(
                         ['email' => $email],
                         [
@@ -50,7 +52,9 @@ final class ImportContactsAction
                             'fd_updated_at' => now(),
                         ]
                     );
+
                     $upserted++;
+
                 } catch (\Throwable $e) {
                     $failed++;
                 }
@@ -67,6 +71,7 @@ final class ImportContactsAction
         ]);
 
         AuditWriter::log('contacts.imported', null, null, [], ['job_id' => $job->id, 'upserted' => $upserted, 'failed' => $failed]);
+        
         return ['job_id' => $job->id, 'upserted' => $upserted, 'failed' => $failed];
     }
 }

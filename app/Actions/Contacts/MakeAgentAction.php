@@ -15,7 +15,9 @@ final class MakeAgentAction
         $c = Contact::findOrFail($id);
 
         $agent = DB::transaction(function () use ($c) {
+
             $max = (int) Agent::max('freshdesk_id');
+            
             return Agent::create([
                 'freshdesk_id'  => $max > 0 ? $max + 1 : 1_000_000,
                 'email'         => $c->email,
@@ -32,9 +34,11 @@ final class MakeAgentAction
                 'fd_created_at' => now(),
                 'fd_updated_at' => now(),
             ]);
+
         });
 
         AuditWriter::log('contact.made_agent', 'Contact', $c->id, [], ['agent_id' => $agent->id]);
+
         return $agent->toArray();
     }
 }

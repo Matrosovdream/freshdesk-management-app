@@ -28,6 +28,7 @@ final class CreateManagerAction
         }
 
         AuditWriter::log('manager.created', 'User', $user->id, [], ['email' => $user->email]);
+        
         return $user->fresh(['roles', 'managerGroups'])->toArray();
     }
 }

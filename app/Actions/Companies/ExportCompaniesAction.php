@@ -16,6 +16,7 @@ final class ExportCompaniesAction
 
         $name = 'exports/companies-'.Str::uuid().'.csv';
         $disk = Storage::disk('public');
+        
         $tmp = tmpfile();
         fputcsv($tmp, ['id', 'name', 'domains', 'industry', 'account_tier', 'health_score', 'renewal_date']);
         $q->cursor()->each(function ($c) use ($tmp) {

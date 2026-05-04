@@ -18,6 +18,7 @@ final class RefreshOverviewAction
         ]);
 
         AuditWriter::log('overview.refresh_queued', null, null, [], ['job_id' => $job->id]);
+        
         return ['queued' => true, 'job_id' => $job->id];
     }
 }

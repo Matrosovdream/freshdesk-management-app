@@ -19,6 +19,7 @@ final class ExportContactsAction
         if (!empty($filters['search']))     $q->where('name', 'like', '%'.$filters['search'].'%');
 
         $name = 'exports/contacts-'.Str::uuid().'.csv';
+        
         $disk = Storage::disk('public');
         $tmp = tmpfile();
         fputcsv($tmp, ['id', 'name', 'email', 'phone', 'company_id', 'tags', 'fd_updated_at']);

@@ -31,6 +31,7 @@ final class CreateTimeEntryAction
         ]);
 
         AuditWriter::log('time_entry.created', 'TimeEntry', $entry->id, [], $entry->toArray());
+        
         return $entry->toArray();
     }
 }

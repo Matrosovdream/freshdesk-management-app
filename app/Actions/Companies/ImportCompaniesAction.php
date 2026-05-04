@@ -23,16 +23,22 @@ final class ImportCompaniesAction
         $failed   = 0;
 
         if ($file && is_file($file->getRealPath())) {
+
             $fh = fopen($file->getRealPath(), 'r');
             $headers = fgetcsv($fh) ?: [];
             $headers = array_map(fn ($h) => strtolower(trim((string) $h)), $headers);
+
             while (($row = fgetcsv($fh)) !== false) {
                 try {
+
                     $assoc = array_combine($headers, $row) ?: [];
+
                     $name = $assoc['name'] ?? null;
                     if (! $name) { $failed++; continue; }
+
                     $max = (int) Company::max('freshdesk_id');
                     $domains = array_values(array_filter(array_map('trim', explode(',', $assoc['domains'] ?? ''))));
+                    
                     Company::updateOrCreate(
                         ['name' => $name],
                         [
@@ -46,9 +52,13 @@ final class ImportCompaniesAction
                             'fd_updated_at' => now(),
                         ]
                     );
+
                     $upserted++;
+
                 } catch (\Throwable $e) { $failed++; }
+
             }
+
             fclose($fh);
         }
 
@@ -59,6 +69,7 @@ final class ImportCompaniesAction
         ]);
 
         AuditWriter::log('companies.imported', null, null, [], ['job_id' => $job->id]);
+        
         return ['job_id' => $job->id, 'upserted' => $upserted, 'failed' => $failed];
     }
 }

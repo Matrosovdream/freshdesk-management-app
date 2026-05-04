@@ -19,7 +19,9 @@ final class CreateGroupAction
         $payload['fd_updated_at'] = now();
 
         $g = Group::create($payload);
+
         AuditWriter::log('group.created', 'Group', $g->id, [], $g->toArray());
+        
         return $g->toArray();
     }
 }

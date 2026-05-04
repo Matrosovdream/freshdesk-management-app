@@ -23,6 +23,7 @@ final class UpdateAgentAction
         $a->save();
 
         AuditWriter::log('agent.updated', 'Agent', $a->id, $before, $a->fresh()->toArray());
+        
         return $a->fresh()->toArray();
     }
 }

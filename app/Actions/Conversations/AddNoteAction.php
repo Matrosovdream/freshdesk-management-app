@@ -13,6 +13,7 @@ final class AddNoteAction
     public function handle(array $data = []): array
     {
         $ticketId = (int) ($data['ticket_id'] ?? 0);
+
         $ticket = Ticket::find($ticketId);
         if (! $ticket) throw new NotFoundHttpException('Ticket not found.');
 
@@ -33,6 +34,7 @@ final class AddNoteAction
         $ticket->save();
 
         AuditWriter::log('conversation.note', 'Ticket', $ticket->id, [], ['conversation_id' => $conv->id]);
+        
         return $conv->toArray();
     }
 }

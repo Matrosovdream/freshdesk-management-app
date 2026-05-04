@@ -23,6 +23,7 @@ final class ListManagersAction
             unset($u['manager_groups']);
             return $u;
         }, $res['data']);
+        
         return $res;
     }
 }

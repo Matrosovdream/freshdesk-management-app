@@ -10,18 +10,19 @@ final class UpdateCompanyAction
     public function handle(array $data = []): array
     {
         $id = (int) ($data['id'] ?? 0);
-        $c = Company::findOrFail($id);
-        $before = $c->toArray();
+        $company = Company::findOrFail($id);
+        $before = $company->toArray();
 
         $patch = array_intersect_key($data, array_flip([
             'name', 'description', 'domains', 'note', 'health_score', 'account_tier',
             'renewal_date', 'industry', 'custom_fields',
         ]));
-        $c->fill($patch);
-        $c->fd_updated_at = now();
-        $c->save();
+        $company->fill($patch);
+        $company->fd_updated_at = now();
+        $company->save();
 
-        AuditWriter::log('company.updated', 'Company', $c->id, $before, $c->fresh()->toArray());
-        return $c->fresh()->toArray();
+        AuditWriter::log('company.updated', 'Company', $company->id, $before, $company->fresh()->toArray());
+
+        return $company->fresh()->toArray();
     }
 }

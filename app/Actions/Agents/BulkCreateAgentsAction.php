@@ -23,15 +23,21 @@ final class BulkCreateAgentsAction
         $failed   = 0;
 
         if ($file && is_file($file->getRealPath())) {
+
             $fh = fopen($file->getRealPath(), 'r');
             $headers = fgetcsv($fh) ?: [];
             $headers = array_map(fn ($h) => strtolower(trim((string) $h)), $headers);
+
             while (($row = fgetcsv($fh)) !== false) {
+
                 try {
                     $assoc = array_combine($headers, $row) ?: [];
                     $email = $assoc['email'] ?? null;
+
                     if (! $email) { $failed++; continue; }
+
                     $max = (int) Agent::max('freshdesk_id');
+
                     Agent::updateOrCreate(
                         ['email' => $email],
                         [
@@ -46,9 +52,12 @@ final class BulkCreateAgentsAction
                         ]
                     );
                     $upserted++;
+                    
                 } catch (\Throwable $e) { $failed++; }
+
             }
             fclose($fh);
+
         }
 
         $job->update([

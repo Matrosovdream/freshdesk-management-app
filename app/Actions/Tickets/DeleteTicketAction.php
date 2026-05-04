@@ -13,6 +13,7 @@ final class DeleteTicketAction
     public function handle(array $data = []): array
     {
         $id = (int) ($data['id'] ?? 0);
+        
         $ticket = Ticket::find($id);
         if (! $ticket) throw new NotFoundHttpException('Ticket not found.');
 
@@ -24,7 +25,9 @@ final class DeleteTicketAction
         }
 
         $ticket->delete();
+
         AuditWriter::log('ticket.deleted', 'Ticket', $ticket->id);
+
         return ['id' => $ticket->id, 'deleted' => true];
     }
 }

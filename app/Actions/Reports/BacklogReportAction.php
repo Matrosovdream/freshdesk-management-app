@@ -26,6 +26,7 @@ final class BacklogReportAction
             ManagerScope::applyToTickets($q);
             $rows[] = ['bucket' => $label, 'count' => $q->count()];
         }
+        
         return ['rows' => $rows];
     }
 }

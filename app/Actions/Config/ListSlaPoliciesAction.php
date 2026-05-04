@@ -10,6 +10,7 @@ final class ListSlaPoliciesAction
     {
         $json = Setting::where('key', 'config.sla_policies')->value('value');
         $decoded = json_decode((string) $json, true);
+        
         return is_array($decoded) ? $decoded : [];
     }
 }

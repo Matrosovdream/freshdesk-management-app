@@ -19,7 +19,9 @@ final class CreateCompanyAction
         $payload['fd_updated_at'] = now();
 
         $c = Company::create($payload);
+        
         AuditWriter::log('company.created', 'Company', $c->id, [], $c->toArray());
+
         return $c->toArray();
     }
 }

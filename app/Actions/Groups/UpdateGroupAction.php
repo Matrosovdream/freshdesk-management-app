@@ -22,6 +22,7 @@ final class UpdateGroupAction
         $g->save();
 
         AuditWriter::log('group.updated', 'Group', $g->id, $before, $g->fresh()->toArray());
+        
         return $g->fresh()->toArray();
     }
 }

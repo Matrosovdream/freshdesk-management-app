@@ -10,7 +10,9 @@ final class ListTicketFieldsAction
     {
         $json = Setting::where('key', 'config.ticket_fields')->value('value');
         if (! $json) return $this->defaults();
+
         $decoded = json_decode($json, true);
+        
         return is_array($decoded) ? $decoded : $this->defaults();
     }
 

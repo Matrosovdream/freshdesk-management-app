@@ -19,6 +19,7 @@ final class RunResourceSyncAction
         ]);
 
         AuditWriter::log('sync.queued', 'SyncJob', $job->id, [], ['resource' => $resource]);
+        
         return ['job_id' => $job->id, 'queued' => true];
     }
 }

@@ -19,6 +19,7 @@ final class UpdateConnectionAction
         }
 
         AuditWriter::log('freshdesk.connection_updated', null, null, [], ['domain' => $data['domain'] ?? null]);
+        
         return app(GetConnectionAction::class)->handle();
     }
 }

@@ -10,6 +10,7 @@ final class ListAutomationsAction
     {
         $json = Setting::where('key', 'config.automations')->value('value');
         $decoded = json_decode((string) $json, true);
+        
         return is_array($decoded) ? $decoded : [];
     }
 }

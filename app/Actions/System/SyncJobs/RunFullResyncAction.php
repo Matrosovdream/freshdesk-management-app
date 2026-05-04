@@ -22,6 +22,7 @@ final class RunFullResyncAction
         ]);
 
         AuditWriter::log('sync.full_resync_queued', 'SyncJob', $job->id);
+        
         return ['job_id' => $job->id, 'queued' => true];
     }
 }

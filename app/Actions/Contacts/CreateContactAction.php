@@ -10,6 +10,7 @@ final class CreateContactAction
     public function handle(array $data = []): array
     {
         $max = (int) Contact::max('freshdesk_id');
+        
         $payload = array_intersect_key($data, array_flip([
             'name', 'email', 'phone', 'mobile', 'twitter_id', 'unique_external_id',
             'company_id', 'job_title', 'language', 'time_zone', 'address', 'active',
@@ -20,7 +21,10 @@ final class CreateContactAction
         $payload['fd_updated_at'] = now();
 
         $c = Contact::create($payload);
+
+        // Log metadata for contact creation
         AuditWriter::log('contact.created', 'Contact', $c->id, [], $c->toArray());
+
         return $c->fresh('company')->toArray();
     }
 }

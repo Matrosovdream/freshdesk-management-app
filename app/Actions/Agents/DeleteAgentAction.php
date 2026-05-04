@@ -10,9 +10,12 @@ final class DeleteAgentAction
     public function handle(array $data = []): array
     {
         $id = (int) ($data['id'] ?? 0);
+
         $a = Agent::findOrFail($id);
         $a->delete();
+        
         AuditWriter::log('agent.deleted', 'Agent', $id);
+
         return ['id' => $id, 'deleted' => true];
     }
 }

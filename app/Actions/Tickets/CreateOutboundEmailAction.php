@@ -11,7 +11,9 @@ final class CreateOutboundEmailAction
     public function handle(array $data = []): array
     {
         $ticket = DB::transaction(function () use ($data) {
+
             $max = (int) Ticket::max('freshdesk_id');
+
             return Ticket::create([
                 'freshdesk_id'    => $max > 0 ? $max + 1 : 1_000_000,
                 'subject'         => $data['subject'] ?? 'Outbound email',
@@ -27,9 +29,11 @@ final class CreateOutboundEmailAction
                 'fd_created_at'   => now(),
                 'fd_updated_at'   => now(),
             ]);
+            
         });
 
         AuditWriter::log('ticket.outbound_email', 'Ticket', $ticket->id);
+
         return $ticket->toArray();
     }
 }

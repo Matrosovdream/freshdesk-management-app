@@ -13,6 +13,7 @@ final class ForwardTicketAction
     public function handle(array $data = []): array
     {
         $id = (int) ($data['id'] ?? 0);
+        
         $ticket = Ticket::find($id);
         if (! $ticket) throw new NotFoundHttpException('Ticket not found.');
 
@@ -32,6 +33,7 @@ final class ForwardTicketAction
         ]);
 
         AuditWriter::log('ticket.forwarded', 'Ticket', $ticket->id, [], ['conversation_id' => $conv->id]);
+        
         return $conv->toArray();
     }
 }

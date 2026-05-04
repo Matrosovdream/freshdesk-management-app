@@ -13,6 +13,7 @@ final class SendPasswordResetLinkAction
 
         // Uses the default "users" password broker.
         Password::broker()->sendResetLink(['email' => $email]);
+        
         return ['ok' => true];
     }
 }

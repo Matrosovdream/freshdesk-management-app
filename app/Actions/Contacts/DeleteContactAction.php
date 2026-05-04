@@ -10,9 +10,13 @@ final class DeleteContactAction
     public function handle(array $data = []): array
     {
         $id = (int) ($data['id'] ?? 0);
+        
         $c = Contact::findOrFail($id);
         $c->delete();
+
+        // Log metadata for soft delete
         AuditWriter::log('contact.deleted', 'Contact', $id);
+
         return ['id' => $id, 'deleted' => true];
     }
 }

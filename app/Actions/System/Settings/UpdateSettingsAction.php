@@ -15,7 +15,9 @@ final class UpdateSettingsAction
         $after   = [];
 
         foreach ($updates as $u) {
+
             if (! isset($u['key'])) continue;
+            
             $row = Setting::firstOrNew(['key' => $u['key']]);
             $before[$u['key']] = $row->value;
 
@@ -25,14 +27,17 @@ final class UpdateSettingsAction
             if (($row->type ?? null) === 'encrypted' && is_string($value) && $value !== '') {
                 $value = Crypt::encryptString($value);
             }
+
             $row->value = (string) $value;
             $row->group = $row->group ?? 'general';
             $row->type  = $row->type  ?? 'string';
             $row->save();
             $after[$u['key']] = $row->value;
+
         }
 
         AuditWriter::log('settings.updated', null, null, $before, $after);
+
         return app(GetSettingsAction::class)->handle();
     }
 }

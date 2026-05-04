@@ -15,6 +15,7 @@ final class SetManagerScopeAction
         $u->managerGroups()->sync($ids);
 
         AuditWriter::log('manager.scope_updated', 'User', $u->id, [], ['group_ids' => $ids]);
+        
         return ['id' => $u->id, 'group_ids' => $ids];
     }
 }

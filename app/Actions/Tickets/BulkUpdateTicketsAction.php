@@ -11,6 +11,7 @@ final class BulkUpdateTicketsAction
     public function handle(array $data = []): array
     {
         $ids = array_map('intval', (array) ($data['ids'] ?? []));
+        
         $properties = (array) ($data['properties'] ?? []);
         if (empty($ids) || empty($properties)) return ['updated' => 0];
 
@@ -21,7 +22,9 @@ final class BulkUpdateTicketsAction
         $q = Ticket::whereIn('id', $ids);
         ManagerScope::applyToTickets($q);
         $count = $q->update($patch + ['fd_updated_at' => now()]);
+
         AuditWriter::log('tickets.bulk_updated', 'Ticket', null, [], ['ids' => $ids, 'patch' => $patch]);
+        
         return ['updated' => $count];
     }
 }
