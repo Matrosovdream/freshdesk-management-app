@@ -59,9 +59,15 @@ final class ApiQuery
     public static function applyOrderBy(Builder $q, ?string $sort, array $allowed, string $default = 'id'): Builder
     {
         $dir = 'desc';
-        if ($sort && str_starts_with($sort, '-')) { $dir = 'desc'; $sort = ltrim($sort, '-'); }
-        elseif ($sort && str_starts_with($sort, '+')) { $dir = 'asc'; $sort = ltrim($sort, '+'); }
+
+        if ($sort && str_starts_with($sort, '-')) { 
+            $dir = 'desc'; $sort = ltrim($sort, '-'); 
+        } elseif ($sort && str_starts_with($sort, '+')) { 
+            $dir = 'asc'; $sort = ltrim($sort, '+'); 
+        }
+
         if (! $sort || ! in_array($sort, $allowed, true)) $sort = $default;
+        
         return $q->orderBy($sort, $dir);
     }
 }

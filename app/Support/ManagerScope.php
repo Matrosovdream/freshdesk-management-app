@@ -17,6 +17,7 @@ final class ManagerScope
     public static function isManager(): bool
     {
         $user = Auth::user();
+
         return $user
             && method_exists($user, 'hasRole')
             && $user->hasRole('manager')
@@ -27,7 +28,7 @@ final class ManagerScope
     public static function groupIds(): array
     {
         $ids = Request::attributes->get('assigned_group_ids');
-        if (is_array($ids)) return array_values(array_unique(array_map('intval', $ids)));
+        if ( is_array($ids) ) return array_values(array_unique(array_map('intval', $ids)));
 
         $user = Auth::user();
         if ($user && method_exists($user, 'managerGroups')) {
@@ -40,8 +41,10 @@ final class ManagerScope
     public static function applyToTickets(Builder $q, string $column = 'group_id'): Builder
     {
         if (! self::isManager()) return $q;
+
         $ids = self::groupIds();
         if (empty($ids)) return $q->whereRaw('1 = 0');
+
         return $q->whereIn($column, $ids);
     }
 
@@ -49,8 +52,10 @@ final class ManagerScope
     public static function applyToContacts(Builder $q): Builder
     {
         if (! self::isManager()) return $q;
+
         $ids = self::groupIds();
         if (empty($ids)) return $q->whereRaw('1 = 0');
+
         return $q->whereExists(function ($s) use ($ids) {
             $s->selectRaw(1)->from('tickets')
                 ->whereColumn('tickets.requester_id', 'contacts.id')
@@ -62,8 +67,10 @@ final class ManagerScope
     public static function applyToCompanies(Builder $q): Builder
     {
         if (! self::isManager()) return $q;
+
         $ids = self::groupIds();
         if (empty($ids)) return $q->whereRaw('1 = 0');
+
         return $q->whereExists(function ($s) use ($ids) {
             $s->selectRaw(1)->from('contacts')
                 ->whereColumn('contacts.company_id', 'companies.id')
@@ -79,21 +86,26 @@ final class ManagerScope
     public static function applyToAgents(Builder $q): Builder
     {
         if (! self::isManager()) return $q;
+
         $ids = self::groupIds();
         if (empty($ids)) return $q->whereRaw('1 = 0');
+
         $q->where(function ($outer) use ($ids) {
             foreach ($ids as $id) {
                 $outer->orWhereJsonContains('group_ids', (int) $id);
             }
         });
+
         return $q;
     }
 
     public static function applyToGroups(Builder $q): Builder
     {
         if (! self::isManager()) return $q;
+
         $ids = self::groupIds();
         if (empty($ids)) return $q->whereRaw('1 = 0');
+        
         return $q->whereIn('id', $ids);
     }
 }
