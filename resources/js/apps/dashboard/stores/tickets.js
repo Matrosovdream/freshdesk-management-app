@@ -74,6 +74,11 @@ export const useTickets = () => {
             return data?.data ?? data ?? [];
         };
 
+        store.activity = async (id) => {
+            const { data } = await http.get(`/api/v1/admin/tickets/${id}/activity`);
+            return data?.data ?? data ?? [];
+        };
+
         store.timeEntries = async (id) => {
             const { data } = await http.get(`/api/v1/admin/tickets/${id}/time-entries`);
             return data?.data ?? data ?? [];

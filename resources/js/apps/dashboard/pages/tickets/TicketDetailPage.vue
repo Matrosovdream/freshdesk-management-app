@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import Button from 'primevue/button';
 import Tabs from 'primevue/tabs';
@@ -28,10 +28,107 @@ const router = useRouter();
 
 const ticket = ref(null);
 const conversations = ref([]);
+const activity = ref([]);
+const activityLoaded = ref(false);
 const activeComposer = ref('reply');
 const reply = ref({ body: '', attachments: [] });
 const note = ref({ body: '', private: true, attachments: [] });
 const tab = ref('conversation');
+
+const FIELD_LABELS = {
+    subject: 'Subject', description: 'Description', status: 'Status', priority: 'Priority',
+    source: 'Source', type: 'Type', requester_id: 'Requester', responder_id: 'Agent',
+    group_id: 'Group', company_id: 'Company', product_id: 'Product', spam: 'Spam',
+    tags: 'Tags', cc_emails: 'CC', due_by: 'Due', fr_due_by: 'First-response due',
+    custom_fields: 'Custom fields',
+};
+const TRACKED = Object.keys(FIELD_LABELS);
+
+const STATUS_LABELS = { 2: 'Open', 3: 'Pending', 4: 'Resolved', 5: 'Closed' };
+const PRIORITY_LABELS = { 1: 'Low', 2: 'Medium', 3: 'High', 4: 'Urgent' };
+
+function formatVal(v) {
+    if (v === null || v === undefined || v === '') return '∅';
+    if (typeof v === 'boolean') return v ? 'yes' : 'no';
+    if (Array.isArray(v)) return v.length ? v.join(', ') : '∅';
+    if (typeof v === 'object') return JSON.stringify(v);
+    return String(v);
+}
+
+function formatField(key, v) {
+    if (v === null || v === undefined || v === '') return '∅';
+    if (key === 'status')   return STATUS_LABELS[v]   ?? formatVal(v);
+    if (key === 'priority') return PRIORITY_LABELS[v] ?? formatVal(v);
+    return formatVal(v);
+}
+
+function diffEntry(entry) {
+    const before = entry.payload_before || {};
+    const after = entry.payload_after || {};
+    const changes = [];
+    for (const key of TRACKED) {
+        const a = before[key];
+        const b = after[key];
+        if (JSON.stringify(a) !== JSON.stringify(b)) {
+            changes.push({ key, label: FIELD_LABELS[key], from: formatField(key, a), to: formatField(key, b) });
+        }
+    }
+    return changes;
+}
+
+const ACTION_META = {
+    'ticket.created':         { title: 'Ticket created',     badge: 'Created' },
+    'ticket.updated':         { title: 'Field changed',      badge: 'Updated' },
+    'ticket.deleted':         { title: 'Ticket deleted',     badge: 'Deleted' },
+    'ticket.restored':        { title: 'Ticket restored',    badge: 'Restored' },
+    'ticket.assigned':        { title: 'Agent reassigned',   badge: 'Updated' },
+    'ticket.merged':          { title: 'Merged',             badge: 'Updated' },
+    'ticket.forwarded':       { title: 'Forwarded',          badge: 'Created' },
+    'ticket.outbound_email':  { title: 'Outbound email',     badge: 'Created' },
+    'conversation.reply':     { title: 'Reply added',        badge: 'Created' },
+    'conversation.note':      { title: 'Note added',         badge: 'Created' },
+};
+
+function entryMeta(entry) {
+    return ACTION_META[entry.action] || { title: entry.action, badge: 'Updated' };
+}
+
+const conversationsById = computed(() => {
+    const m = new Map();
+    for (const c of conversations.value) m.set(c.id, c);
+    return m;
+});
+
+function findConversation(entry) {
+    const id = entry?.meta?.conversation_id;
+    return id ? conversationsById.value.get(id) : null;
+}
+
+function badgeClass(badge) {
+    return {
+        Created:  'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-300',
+        Updated:  'bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300',
+        Deleted:  'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300',
+        Restored: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
+    }[badge] || 'bg-surface-100 text-surface-700 dark:bg-surface-800 dark:text-surface-300';
+}
+
+function formatDate(s) {
+    if (!s) return '';
+    const d = new Date(s);
+    if (isNaN(d)) return s;
+    return d.toLocaleString('en-US', {
+        year: 'numeric', month: '2-digit', day: '2-digit',
+        hour: 'numeric', minute: '2-digit', hour12: true,
+    });
+}
+
+async function loadActivity() {
+    activity.value = await tickets.activity(props.id);
+    activityLoaded.value = true;
+}
+
+watch(tab, (v) => { if (v === 'activity' && !activityLoaded.value) loadActivity(); });
 
 const statusOptions = [
     { label: 'Open', value: 2 }, { label: 'Pending', value: 3 }, { label: 'Resolved', value: 4 }, { label: 'Closed', value: 5 },
@@ -48,6 +145,7 @@ onMounted(load);
 async function patch(field, value) {
     try {
         ticket.value = await tickets.update(props.id, { [field]: value });
+        if (activityLoaded.value) loadActivity();
     } catch {
         ui.pushToast({ severity: 'error', summary: `Could not update ${field}.` });
     }
@@ -164,7 +262,57 @@ function openInFreshdesk() {
                             <p class="text-surface-500 text-sm py-6 text-center">Satisfaction ratings — wired once the backend ships.</p>
                         </TabPanel>
                         <TabPanel value="activity">
-                            <p class="text-surface-500 text-sm py-6 text-center">Activity log — local audit entries for this ticket.</p>
+                            <div class="flex flex-col gap-2 mt-3">
+                                <p v-if="activityLoaded && !activity.length" class="text-surface-400 text-center py-6 text-base">No activity yet.</p>
+                                <div v-for="entry in activity" :key="entry.id"
+                                    class="bg-surface-0 dark:bg-surface-900 border border-surface-200 dark:border-surface-700 rounded p-4">
+                                    <div class="flex items-center justify-between mb-2 gap-2 flex-wrap">
+                                        <div class="flex items-center gap-2 text-base">
+                                            <span class="font-medium">{{ entryMeta(entry).title }}</span>
+                                            <span :class="['inline-flex items-center px-2 py-0.5 rounded text-xs font-medium', badgeClass(entryMeta(entry).badge)]">
+                                                {{ entryMeta(entry).badge }}
+                                            </span>
+                                            <span class="text-surface-500 font-normal text-sm">
+                                                · {{ entry.user?.name || (entry.actor_type === 'system' ? 'System' : 'Unknown') }}
+                                            </span>
+                                        </div>
+                                        <span class="text-sm text-surface-500">{{ formatDate(entry.created_at) }}</span>
+                                    </div>
+                                    <ul v-if="entry.action === 'ticket.updated'" class="text-sm text-surface-600 dark:text-surface-300 mt-1 flex flex-col gap-1">
+                                        <li v-for="c in diffEntry(entry)" :key="c.key">
+                                            <span class="font-medium">{{ c.label }}:</span>
+                                            <span class="text-surface-500">{{ c.from }}</span>
+                                            <span class="mx-1">→</span>
+                                            <span>{{ c.to }}</span>
+                                        </li>
+                                        <li v-if="!diffEntry(entry).length" class="text-surface-400 italic">No tracked field changes</li>
+                                    </ul>
+                                    <div v-else-if="entry.action === 'conversation.reply'" class="mt-2 flex flex-col gap-1 text-sm">
+                                        <template v-if="findConversation(entry)">
+                                            <div v-if="findConversation(entry).from_email" class="text-surface-500">
+                                                <span class="font-medium">From:</span> {{ findConversation(entry).from_email }}
+                                            </div>
+                                            <div v-if="findConversation(entry).to_emails?.length" class="text-surface-500">
+                                                <span class="font-medium">To:</span> {{ findConversation(entry).to_emails.join(', ') }}
+                                            </div>
+                                            <div v-if="findConversation(entry).cc_emails?.length" class="text-surface-500">
+                                                <span class="font-medium">Cc:</span> {{ findConversation(entry).cc_emails.join(', ') }}
+                                            </div>
+                                            <div v-if="findConversation(entry).bcc_emails?.length" class="text-surface-500">
+                                                <span class="font-medium">Bcc:</span> {{ findConversation(entry).bcc_emails.join(', ') }}
+                                            </div>
+                                            <div class="mt-1 p-2 rounded bg-surface-50 dark:bg-surface-800 border border-surface-200 dark:border-surface-700 text-surface-700 dark:text-surface-200"
+                                                v-html="findConversation(entry).body_html || findConversation(entry).body || findConversation(entry).body_text"></div>
+                                        </template>
+                                        <div v-else class="text-surface-400 italic">
+                                            Reply not loaded (conversation #{{ entry.meta?.conversation_id }})
+                                        </div>
+                                    </div>
+                                    <div v-else-if="entry.meta" class="text-sm text-surface-500 mt-1">
+                                        {{ Object.entries(entry.meta).map(([k, v]) => `${k}: ${formatVal(v)}`).join(' · ') }}
+                                    </div>
+                                </div>
+                            </div>
                         </TabPanel>
                     </TabPanels>
                 </Tabs>

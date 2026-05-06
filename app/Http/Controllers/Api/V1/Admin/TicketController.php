@@ -63,4 +63,9 @@ class TicketController extends Controller
     {
         return response()->json(['data' => $action->handle(array_merge($request->validated(), ['id' => $ticket]))]);
     }
+
+    public function activity(Request $request, \App\Actions\Tickets\ListTicketActivityAction $action, int $ticket): JsonResponse
+    {
+        return response()->json(['data' => $action->handle(array_merge($request->all(), ['id' => $ticket]))]);
+    }
 }

@@ -11,33 +11,51 @@ const props = defineProps({
 const emit = defineEmits(['update:modelValue']);
 
 const suggestions = ref([]);
-const selected = ref(props.modelValue);
+const selected = ref(null);
 
-watch(() => props.modelValue, (v) => (selected.value = v));
+const basePath = () => (props.kind === 'contacts' ? '/api/v1/admin/contacts' : '/api/v1/admin/agents');
+
+async function resolve(value) {
+    if (value == null || value === '') {
+        selected.value = null;
+        return;
+    }
+    if (typeof value === 'object') {
+        selected.value = value;
+        return;
+    }
+    if (selected.value?.id === value) return;
+    try {
+        const { data } = await http.get(`${basePath()}/${value}`);
+        selected.value = data?.data ?? data ?? { id: value, name: String(value) };
+    } catch {
+        selected.value = { id: value, name: String(value) };
+    }
+}
+
+watch(() => props.modelValue, resolve, { immediate: true });
 
 async function search(ev) {
-    const q = ev.query;
-    const path = props.kind === 'contacts' ? '/api/v1/admin/contacts' : '/api/v1/admin/agents';
     try {
-        const { data } = await http.get(path, { params: { autocomplete: q, search: q } });
+        const { data } = await http.get(basePath(), { params: { autocomplete: ev.query, search: ev.query } });
         suggestions.value = data?.data ?? data ?? [];
     } catch {
         suggestions.value = [];
     }
 }
 
-function onSelect(e) {
-    const val = e.value?.id ?? e.value;
-    emit('update:modelValue', val);
+function onChange(v) {
+    selected.value = v && typeof v === 'object' ? v : null;
+    emit('update:modelValue', v?.id ?? v ?? null);
 }
 </script>
 
 <template>
     <AutoComplete
-        v-model="selected"
+        :modelValue="selected"
         :suggestions="suggestions"
         @complete="search"
-        @update:modelValue="(v) => emit('update:modelValue', v?.id ?? v)"
+        @update:modelValue="onChange"
         :placeholder="placeholder"
         optionLabel="name"
         :dropdown="true"

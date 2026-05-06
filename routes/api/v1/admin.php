@@ -43,6 +43,7 @@ Route::middleware(['auth:sanctum', 'role:superadmin|manager', 'manager.scope'])-
         Route::post('/tickets/{id}/forward',          [Admin\TicketController::class, 'forward'])->middleware('right:tickets.forward');
         Route::post('/tickets/outbound-email',        [Admin\TicketController::class, 'outboundEmail'])->middleware('right:tickets.outbound_email');
         Route::post('/tickets/{id}/assign',           [Admin\TicketController::class, 'assign'])->middleware('right:tickets.assign');
+        Route::get('/tickets/{id}/activity',          [Admin\TicketController::class, 'activity'])->middleware('right:tickets.view');
 
         // Conversations
         Route::get('/tickets/{id}/conversations',     [Admin\ConversationController::class, 'index'])->middleware('right:tickets.view');
