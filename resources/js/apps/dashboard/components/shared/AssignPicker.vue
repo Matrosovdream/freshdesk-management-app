@@ -35,10 +35,17 @@ async function resolve(value) {
 
 watch(() => props.modelValue, resolve, { immediate: true });
 
+function unwrapList(body) {
+    if (Array.isArray(body)) return body;
+    if (Array.isArray(body?.data)) return body.data;
+    if (Array.isArray(body?.data?.data)) return body.data.data;
+    return [];
+}
+
 async function search(ev) {
     try {
         const { data } = await http.get(basePath(), { params: { autocomplete: ev.query, search: ev.query } });
-        suggestions.value = data?.data ?? data ?? [];
+        suggestions.value = unwrapList(data);
     } catch {
         suggestions.value = [];
     }
