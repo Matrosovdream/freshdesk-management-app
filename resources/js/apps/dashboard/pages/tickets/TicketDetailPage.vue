@@ -91,11 +91,19 @@ function openInFreshdesk() {
                 <div class="flex items-center gap-2 mt-1">
                     <StatusPill :status="ticket.status" />
                     <PriorityIcon :priority="ticket.priority" />
+                    <span v-if="ticket.spam" class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                        <i class="pi pi-flag-fill text-[10px]"></i> Spam
+                    </span>
                 </div>
             </div>
             <div class="flex gap-2">
                 <Button label="Close" icon="pi pi-check" severity="secondary" outlined @click="patch('status', 5)" />
-                <Button label="Mark spam" severity="warn" outlined @click="patch('spam', true)" />
+                <Button
+                    :label="ticket.spam ? 'Unmark spam' : 'Mark spam'"
+                    severity="warn"
+                    outlined
+                    @click="patch('spam', !ticket.spam)"
+                />
                 <Button label="Open in Freshdesk" icon="pi pi-external-link" outlined @click="openInFreshdesk" />
                 <Button label="Delete" severity="danger" outlined @click="tickets.destroy(ticket.id).then(() => router.push('/tickets'))" />
             </div>
