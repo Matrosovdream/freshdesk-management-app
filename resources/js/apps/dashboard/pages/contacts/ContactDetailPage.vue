@@ -10,6 +10,7 @@ import TabPanel from 'primevue/tabpanel';
 import AgentAvatar from '@/components/shared/AgentAvatar.vue';
 import { useContacts } from '@/stores/contacts';
 import { useUi } from '@/stores/ui';
+import { formatDate } from '@shared/datetime';
 
 const props = defineProps({ id: { type: [String, Number], required: true } });
 const contacts = useContacts();
@@ -33,12 +34,6 @@ async function sendInvite() {
     }
 }
 
-function formatDate(value) {
-    if (!value) return '—';
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return value;
-    return d.toLocaleString();
-}
 
 const tags = computed(() => Array.isArray(contact.value?.tags) ? contact.value.tags : []);
 const otherEmails = computed(() => Array.isArray(contact.value?.other_emails) ? contact.value.other_emails : []);

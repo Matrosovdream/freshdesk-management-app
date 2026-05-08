@@ -79,7 +79,9 @@ onMounted(() => system.fetchApiKeys());
                 <template #body="{ data }">{{ (data.scopes || []).join(', ') }}</template>
             </Column>
             <Column field="created_by.name" header="Created by" />
-            <Column field="last_used_at" header="Last used" />
+            <Column field="last_used_at" header="Last used">
+                <template #body="{ data }">{{ $formatDate(data.last_used_at) }}</template>
+            </Column>
             <Column field="status" header="Status" />
             <Column header="Actions" style="width: 12rem">
                 <template #body="{ data }">

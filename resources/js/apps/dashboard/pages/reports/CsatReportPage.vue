@@ -35,7 +35,9 @@ onMounted(load);
                     <Column field="rating" header="Rating" />
                     <Column field="comment" header="Comment" />
                     <Column field="agent.name" header="Agent" />
-                    <Column field="created_at" header="Date" />
+                    <Column field="created_at" header="Date">
+                        <template #body="{ data }">{{ $formatDate(data.created_at) }}</template>
+                    </Column>
                 </DataTable>
             </div>
         </div>

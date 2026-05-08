@@ -35,7 +35,9 @@ function openRow(row) {
         <FilterBar :schema="filterSchema" v-model="filters" @apply="(f) => audit.fetch(f)" @clear="audit.fetch({})" />
 
         <DataTable :value="audit.items" :loading="audit.loading" stripedRows dataKey="id" rowHover @row-click="(e) => openRow(e.data)">
-            <Column field="created_at" header="When" style="width: 12rem" />
+            <Column field="created_at" header="When" style="width: 12rem">
+                <template #body="{ data }">{{ $formatDate(data.created_at) }}</template>
+            </Column>
             <Column header="Who">
                 <template #body="{ data }">{{ data.user?.name || data.user?.email || 'system' }}</template>
             </Column>
@@ -51,7 +53,7 @@ function openRow(row) {
 
         <Drawer v-model:visible="drawerOpen" position="right" :style="{ width: '30rem' }" header="Audit entry">
             <div v-if="selected" class="flex flex-col gap-3 text-sm">
-                <div><b>When:</b> {{ selected.created_at }}</div>
+                <div><b>When:</b> {{ $formatDate(selected.created_at) }}</div>
                 <div><b>Who:</b> {{ selected.user?.name || 'system' }}</div>
                 <div><b>Action:</b> {{ selected.action }}</div>
                 <div><b>Target:</b> {{ selected.target_type }} #{{ selected.target_id }}</div>

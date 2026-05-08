@@ -62,7 +62,9 @@ onMounted(() => contacts.fetch());
             <Column header="Company">
                 <template #body="{ data }">{{ data.company?.name || '—' }}</template>
             </Column>
-            <Column field="updated_at" header="Updated" />
+            <Column field="updated_at" header="Updated">
+                <template #body="{ data }">{{ $formatDate(data.updated_at) }}</template>
+            </Column>
         </DataTable>
 
         <BulkActionsBar :count="selected.length" @clear="selected = []">

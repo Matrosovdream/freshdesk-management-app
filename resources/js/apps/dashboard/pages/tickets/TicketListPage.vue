@@ -95,7 +95,9 @@ onMounted(() => tickets.fetch());
                     <PriorityIcon :priority="data.priority" />
                 </template>
             </Column>
-            <Column field="updated_at" header="Updated" style="width: 10rem" />
+            <Column field="updated_at" header="Updated" style="width: 10rem">
+                <template #body="{ data }">{{ $formatDate(data.updated_at) }}</template>
+            </Column>
         </DataTable>
 
         <div v-if="tickets.hasMore" class="flex justify-center">

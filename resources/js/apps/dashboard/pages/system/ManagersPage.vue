@@ -67,7 +67,9 @@ onMounted(() => Promise.allSettled([managers.fetch(), groups.fetch()]));
             <Column header="Groups">
                 <template #body="{ data }">{{ (data.assigned_groups || []).length }}</template>
             </Column>
-            <Column field="last_login_at" header="Last login" />
+            <Column field="last_login_at" header="Last login">
+                <template #body="{ data }">{{ $formatDate(data.last_login_at) }}</template>
+            </Column>
             <Column header="Active">
                 <template #body="{ data }">{{ data.is_active ? 'Yes' : 'No' }}</template>
             </Column>

@@ -30,7 +30,9 @@ onMounted(() => agents.fetch());
             <Column field="email" header="Email" />
             <Column field="type" header="Type" />
             <Column field="ticket_scope" header="Scope" />
-            <Column field="last_login_at" header="Last login" />
+            <Column field="last_login_at" header="Last login">
+                <template #body="{ data }">{{ $formatDate(data.last_login_at) }}</template>
+            </Column>
         </DataTable>
     </div>
 </template>

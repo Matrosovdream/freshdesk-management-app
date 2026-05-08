@@ -65,7 +65,9 @@ onMounted(load);
                 <Column field="resource" header="Resource" />
                 <Column field="mode" header="Mode" />
                 <Column field="status" header="Status" />
-                <Column field="started_at" header="Started" />
+                <Column field="started_at" header="Started">
+                    <template #body="{ data }">{{ $formatDate(data.started_at) }}</template>
+                </Column>
                 <Column field="duration_ms" header="Duration" />
                 <Column field="items_upserted" header="Upserted" />
                 <Column field="items_failed" header="Failed" />

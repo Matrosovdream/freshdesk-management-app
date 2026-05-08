@@ -16,6 +16,7 @@ import Select from 'primevue/select';
 import TagInput from '@/components/shared/TagInput.vue';
 import { useCompanies } from '@/stores/companies';
 import { useUi } from '@/stores/ui';
+import { formatDate } from '@shared/datetime';
 
 const props = defineProps({ id: { type: [String, Number], required: true } });
 const companies = useCompanies();
@@ -98,13 +99,6 @@ async function destroy() {
     } finally {
         deleting.value = false;
     }
-}
-
-function formatDate(value) {
-    if (!value) return '—';
-    const d = new Date(value);
-    if (Number.isNaN(d.getTime())) return value;
-    return d.toLocaleString();
 }
 
 function healthSeverity(health) {

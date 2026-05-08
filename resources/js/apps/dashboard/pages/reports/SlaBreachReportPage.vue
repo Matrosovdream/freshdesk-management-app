@@ -31,7 +31,9 @@ onMounted(load);
             <Column field="display_id" header="#" />
             <Column field="subject" header="Subject" />
             <Column field="breach_type" header="Breach" />
-            <Column field="breached_at" header="At" />
+            <Column field="breached_at" header="At">
+                <template #body="{ data }">{{ $formatDate(data.breached_at) }}</template>
+            </Column>
             <Column field="agent.name" header="Agent" />
         </DataTable>
     </div>

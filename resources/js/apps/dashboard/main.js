@@ -7,6 +7,7 @@ import { useAuth } from './stores/auth';
 import { useConfig } from './stores/config';
 import { useUi } from './stores/ui';
 import { onRateLimit } from '@shared/http';
+import { formatDate } from '@shared/datetime';
 
 import Aura from '@primeuix/themes/aura';
 import PrimeVue from 'primevue/config';
@@ -32,6 +33,8 @@ async function bootstrap() {
     });
     app.use(ToastService);
     app.use(ConfirmationService);
+
+    app.config.globalProperties.$formatDate = formatDate;
 
     const auth = useAuth();
     const config = useConfig();

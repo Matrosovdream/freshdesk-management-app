@@ -18,6 +18,7 @@ import TagInput from '@/components/shared/TagInput.vue';
 import { useTickets } from '@/stores/tickets';
 import { useUi } from '@/stores/ui';
 import { useSystem } from '@/stores/system';
+import { formatDate } from '@shared/datetime';
 
 const props = defineProps({ id: { type: [String, Number], required: true } });
 
@@ -113,15 +114,6 @@ function badgeClass(badge) {
     }[badge] || 'bg-surface-100 text-surface-700 dark:bg-surface-800 dark:text-surface-300';
 }
 
-function formatDate(s) {
-    if (!s) return '';
-    const d = new Date(s);
-    if (isNaN(d)) return s;
-    return d.toLocaleString('en-US', {
-        year: 'numeric', month: '2-digit', day: '2-digit',
-        hour: 'numeric', minute: '2-digit', hour12: true,
-    });
-}
 
 async function loadActivity() {
     activity.value = await tickets.activity(props.id);
@@ -222,7 +214,7 @@ function openInFreshdesk() {
                                 <div v-for="c in conversations" :key="c.id" class="bg-surface-0 dark:bg-surface-900 border rounded p-3" :class="c.private ? 'border-amber-300 bg-amber-50 dark:bg-amber-900/10' : 'border-surface-200 dark:border-surface-700'">
                                     <div class="flex items-center justify-between mb-1">
                                         <AgentAvatar :agent="c.user" showName size="small" />
-                                        <span class="text-xs text-surface-500">{{ c.private ? 'Internal note' : 'Reply' }} · {{ c.created_at }}</span>
+                                        <span class="text-xs text-surface-500">{{ c.private ? 'Internal note' : 'Reply' }} · {{ formatDate(c.created_at) }}</span>
                                     </div>
                                     <div v-html="c.body_html || c.body" class="text-sm"></div>
                                 </div>
