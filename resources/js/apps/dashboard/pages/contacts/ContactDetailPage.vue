@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import Button from 'primevue/button';
 import Tag from 'primevue/tag';
 import Tabs from 'primevue/tabs';
@@ -7,23 +7,88 @@ import TabList from 'primevue/tablist';
 import Tab from 'primevue/tab';
 import TabPanels from 'primevue/tabpanels';
 import TabPanel from 'primevue/tabpanel';
+import Dialog from 'primevue/dialog';
+import InputText from 'primevue/inputtext';
+import Textarea from 'primevue/textarea';
+import Checkbox from 'primevue/checkbox';
+import TagInput from '@/components/shared/TagInput.vue';
 import AgentAvatar from '@/components/shared/AgentAvatar.vue';
 import { useContacts } from '@/stores/contacts';
 import { useUi } from '@/stores/ui';
+import { useAuth } from '@/stores/auth';
 import { formatDate } from '@shared/datetime';
 
 const props = defineProps({ id: { type: [String, Number], required: true } });
 const contacts = useContacts();
 const ui = useUi();
+const auth = useAuth();
 
 const contact = ref(null);
 const tab = ref('profile');
+
+const editOpen = ref(false);
+const saving = ref(false);
+const form = reactive({
+    name: '', email: '', phone: '', mobile: '', twitter_id: '', unique_external_id: '',
+    job_title: '', language: '', time_zone: '', address: '', tags: [], active: false, blocked: false,
+});
+const errors = reactive({});
 
 async function load() {
     contact.value = await contacts.show(props.id);
 }
 onMounted(load);
 watch(() => props.id, load);
+
+function openEdit() {
+    if (!contact.value) return;
+    Object.keys(errors).forEach((k) => delete errors[k]);
+    form.name               = contact.value.name               ?? '';
+    form.email              = contact.value.email              ?? '';
+    form.phone              = contact.value.phone              ?? '';
+    form.mobile             = contact.value.mobile             ?? '';
+    form.twitter_id         = contact.value.twitter_id         ?? '';
+    form.unique_external_id = contact.value.unique_external_id ?? '';
+    form.job_title          = contact.value.job_title          ?? '';
+    form.language           = contact.value.language           ?? '';
+    form.time_zone          = contact.value.time_zone          ?? '';
+    form.address            = contact.value.address            ?? '';
+    form.tags               = Array.isArray(contact.value.tags) ? [...contact.value.tags] : [];
+    form.active             = !!contact.value.active;
+    form.blocked            = !!contact.value.blocked_at;
+    editOpen.value = true;
+}
+
+async function save() {
+    Object.keys(errors).forEach((k) => delete errors[k]);
+    saving.value = true;
+    try {
+        const patch = {
+            name:               form.name,
+            email:              form.email || null,
+            phone:              form.phone || null,
+            mobile:             form.mobile || null,
+            twitter_id:         form.twitter_id || null,
+            unique_external_id: form.unique_external_id || null,
+            job_title:          form.job_title || null,
+            language:           form.language || null,
+            time_zone:          form.time_zone || null,
+            address:            form.address || null,
+            tags:               Array.isArray(form.tags) ? form.tags : [],
+            active:             !!form.active,
+            blocked:            !!form.blocked,
+        };
+        const updated = await contacts.update(contact.value.id, patch);
+        contact.value = updated ?? contact.value;
+        editOpen.value = false;
+        ui.pushToast({ severity: 'success', summary: 'Contact updated.' });
+    } catch (e) {
+        if (e.validation) Object.assign(errors, e.validation);
+        ui.pushToast({ severity: 'error', summary: 'Update failed.' });
+    } finally {
+        saving.value = false;
+    }
+}
 
 async function sendInvite() {
     try {
@@ -88,7 +153,9 @@ const metaRows = computed(() => contact.value ? [
                 <div>
                     <h1 class="text-2xl font-semibold flex items-center gap-2">
                         {{ contact.name }}
-                        <Tag v-if="contact.active" value="Verified" severity="success" />
+                        <Tag v-if="contact.deleted_at" value="Deleted" severity="danger" />
+                        <Tag v-else-if="contact.blocked_at" value="Blocked" severity="danger" />
+                        <Tag v-else-if="contact.active" value="Verified" severity="success" />
                         <Tag v-else value="Unverified" severity="warn" />
                         <Tag v-if="contact.view_all_tickets" value="Company view" severity="info" />
                     </h1>
@@ -100,12 +167,80 @@ const metaRows = computed(() => contact.value ? [
                 </div>
             </div>
             <div class="flex gap-2">
+                <Button v-if="auth.can('contacts.update')" label="Edit" icon="pi pi-pencil" outlined @click="openEdit" />
                 <Button label="Send invite" icon="pi pi-send" outlined @click="sendInvite" />
                 <Button label="Make agent" icon="pi pi-user-plus" outlined />
                 <Button label="Merge" icon="pi pi-link" outlined />
                 <Button label="Delete" severity="danger" outlined />
             </div>
         </div>
+
+        <Dialog v-model:visible="editOpen" modal header="Edit contact" :style="{ width: '40rem' }">
+            <div class="flex flex-col gap-3">
+                <div>
+                    <label class="text-sm font-medium">Name</label>
+                    <InputText v-model="form.name" class="w-full" required />
+                    <p v-if="errors.name" class="text-xs text-red-500">{{ errors.name[0] || errors.name }}</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-sm font-medium">Email</label>
+                        <InputText v-model="form.email" type="email" class="w-full" />
+                        <p v-if="errors.email" class="text-xs text-red-500">{{ errors.email[0] || errors.email }}</p>
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium">Phone</label>
+                        <InputText v-model="form.phone" class="w-full" />
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium">Mobile</label>
+                        <InputText v-model="form.mobile" class="w-full" />
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium">Job title</label>
+                        <InputText v-model="form.job_title" class="w-full" />
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium">Twitter</label>
+                        <InputText v-model="form.twitter_id" class="w-full" />
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium">External ID</label>
+                        <InputText v-model="form.unique_external_id" class="w-full" />
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium">Language</label>
+                        <InputText v-model="form.language" class="w-full" />
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium">Time zone</label>
+                        <InputText v-model="form.time_zone" class="w-full" />
+                    </div>
+                </div>
+                <div>
+                    <label class="text-sm font-medium">Address</label>
+                    <Textarea v-model="form.address" rows="2" class="w-full" />
+                </div>
+                <div>
+                    <label class="text-sm font-medium">Tags</label>
+                    <TagInput v-model="form.tags" />
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="flex items-center gap-2">
+                        <Checkbox v-model="form.active" inputId="contact-active" binary />
+                        <label for="contact-active" class="text-sm">Verified</label>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <Checkbox v-model="form.blocked" inputId="contact-blocked" binary />
+                        <label for="contact-blocked" class="text-sm">Blocked</label>
+                    </div>
+                </div>
+            </div>
+            <template #footer>
+                <Button label="Cancel" severity="secondary" outlined @click="editOpen = false" />
+                <Button label="Save" :loading="saving" @click="save" />
+            </template>
+        </Dialog>
 
         <Tabs v-model:value="tab">
             <TabList>

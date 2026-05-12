@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router';
 import Button from 'primevue/button';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
+import Tag from 'primevue/tag';
 import FilterBar from '@/components/shared/FilterBar.vue';
 import BulkActionsBar from '@/components/shared/BulkActionsBar.vue';
 import ScopePill from '@/components/shared/ScopePill.vue';
@@ -15,6 +16,12 @@ const contacts = useContacts();
 const ui = useUi();
 const auth = useAuth();
 const router = useRouter();
+
+function stateOf(c) {
+    if (c?.deleted_at) return { label: 'Deleted', severity: 'danger' };
+    if (c?.blocked_at) return { label: 'Blocked', severity: 'danger' };
+    return c?.active ? { label: 'Verified', severity: 'success' } : { label: 'Unverified', severity: 'warn' };
+}
 
 const filters = ref({});
 const selected = ref([]);
@@ -61,6 +68,11 @@ onMounted(() => contacts.fetch());
             <Column field="phone" header="Phone" />
             <Column header="Company">
                 <template #body="{ data }">{{ data.company?.name || '—' }}</template>
+            </Column>
+            <Column header="State">
+                <template #body="{ data }">
+                    <Tag :value="stateOf(data).label" :severity="stateOf(data).severity" />
+                </template>
             </Column>
             <Column field="updated_at" header="Updated">
                 <template #body="{ data }">{{ $formatDate(data.updated_at) }}</template>

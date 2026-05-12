@@ -15,8 +15,9 @@ final class ListContactsAction
 
         if (!empty($data['state'])) {
             switch ($data['state']) {
-                case 'verified':   $q->where('active', true); break;
-                case 'unverified': $q->where('active', false); break;
+                case 'verified':   $q->where('active', true)->whereNull('blocked_at'); break;
+                case 'unverified': $q->where('active', false)->whereNull('blocked_at'); break;
+                case 'blocked':    $q->whereNotNull('blocked_at'); break;
                 case 'deleted':    $q->onlyTrashed(); break;
             }
         }

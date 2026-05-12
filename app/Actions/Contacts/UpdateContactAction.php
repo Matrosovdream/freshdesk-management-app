@@ -19,6 +19,16 @@ final class UpdateContactAction
             'view_all_tickets', 'other_emails', 'other_companies', 'tags', 'custom_fields',
         ]));
         $contact->fill($patch);
+
+        if (array_key_exists('blocked', $data)) {
+            $shouldBlock = (bool) $data['blocked'];
+            if ($shouldBlock && $contact->blocked_at === null) {
+                $contact->blocked_at = now();
+            } elseif (! $shouldBlock) {
+                $contact->blocked_at = null;
+            }
+        }
+
         $contact->fd_updated_at = now();
         $contact->save();
 

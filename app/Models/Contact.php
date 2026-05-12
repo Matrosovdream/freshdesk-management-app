@@ -22,6 +22,7 @@ class Contact extends Model
         'fd_created_at'   => 'datetime',
         'fd_updated_at'   => 'datetime',
         'synced_at'       => 'datetime',
+        'blocked_at'      => 'datetime',
     ];
 
     public function company()
