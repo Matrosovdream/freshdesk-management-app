@@ -14,6 +14,7 @@ final class ListAgentsAction
         ManagerScope::applyToAgents($q);
 
         if (!empty($data['available'])) $q->where('available', (bool) $data['available']);
+        if (!empty($data['type']))      $q->where('type', $data['type']);
 
         ApiQuery::applySearch($q, $data['search'] ?? ($data['autocomplete'] ?? null), ['name', 'email']);
         ApiQuery::applyOrderBy($q, $data['sort'] ?? null, ['name', 'email', 'fd_updated_at'], 'name');
