@@ -49,9 +49,9 @@ final class ApiQuery
     public static function applySearch(Builder $q, ?string $search, array $columns): Builder
     {
         if (! $search) return $q;
-        $term = '%'.trim($search).'%';
+        $term = '%'.mb_strtolower(trim($search)).'%';
         $q->where(function ($w) use ($columns, $term) {
-            foreach ($columns as $col) $w->orWhere($col, 'like', $term);
+            foreach ($columns as $col) $w->orWhereRaw('LOWER('.$col.') LIKE ?', [$term]);
         });
         return $q;
     }

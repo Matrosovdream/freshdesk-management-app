@@ -16,7 +16,7 @@ final class ListCompaniesAction
             }]);
         ManagerScope::applyToCompanies($q);
 
-        if (!empty($data['industry']))     $q->where('industry', $data['industry']);
+        if (!empty($data['industry']))     $q->whereRaw('LOWER(industry) = ?', [mb_strtolower($data['industry'])]);
         if (!empty($data['account_tier'])) $q->where('account_tier', $data['account_tier']);
         if (!empty($data['domain'])) {
             $q->whereJsonContains('domains', $data['domain']);
