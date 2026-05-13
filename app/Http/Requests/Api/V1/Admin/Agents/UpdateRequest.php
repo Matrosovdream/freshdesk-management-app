@@ -13,6 +13,10 @@ class UpdateRequest extends FormRequest
         return [
             'email'        => ['sometimes', 'email'],
             'name'         => ['sometimes', 'nullable', 'string'],
+            'job_title'    => ['sometimes', 'nullable', 'string'],
+            'language'     => ['sometimes', 'nullable', 'string'],
+            'time_zone'    => ['sometimes', 'nullable', 'string'],
+            'type'         => ['sometimes', 'nullable', 'in:support_agent,field_agent,collaborator'],
             'ticket_scope' => ['sometimes', 'integer', 'between:1,3'],
             'occasional'   => ['sometimes', 'boolean'],
             'available'    => ['sometimes', 'boolean'],
