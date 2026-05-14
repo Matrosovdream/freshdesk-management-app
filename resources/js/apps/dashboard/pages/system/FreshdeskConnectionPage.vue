@@ -39,10 +39,14 @@ async function save() {
 async function test() {
     try {
         const result = await system.testFreshdesk();
-        testResult.value = { ok: true, message: result?.message || `Connected as ${result?.agent?.name || 'agent'}.` };
-        ui.pushToast({ severity: 'success', summary: testResult.value.message });
+        const ok = result?.ok === true;
+        const message = result?.message || (ok ? `Connected as ${result?.agent?.name || 'agent'}.` : 'Connection failed.');
+        testResult.value = { ok, message };
+        ui.pushToast({ severity: ok ? 'success' : 'error', summary: message });
     } catch (e) {
-        testResult.value = { ok: false, message: e?.response?.data?.message || 'Connection failed.' };
+        const message = e?.response?.data?.message || 'Connection failed.';
+        testResult.value = { ok: false, message };
+        ui.pushToast({ severity: 'error', summary: message });
     }
 }
 
