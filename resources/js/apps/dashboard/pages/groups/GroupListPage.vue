@@ -6,15 +6,57 @@ import Column from 'primevue/column';
 import Dialog from 'primevue/dialog';
 import InputText from 'primevue/inputtext';
 import Textarea from 'primevue/textarea';
+import Select from 'primevue/select';
 import { useGroups } from '@/stores/groups';
 import { useUi } from '@/stores/ui';
 
 const groups = useGroups();
 const ui = useUi();
 
+const unassignedForOptions = [
+    { label: '30 minutes', value: '30m' },
+    { label: '1 hour',     value: '1h' },
+    { label: '2 hours',    value: '2h' },
+    { label: '4 hours',    value: '4h' },
+    { label: '8 hours',    value: '8h' },
+    { label: '12 hours',   value: '12h' },
+    { label: '1 day',      value: '1d' },
+    { label: '2 days',     value: '2d' },
+    { label: '3 days',     value: '3d' },
+];
+
+function unassignedForLabel(v) {
+    if (!v) return '—';
+    return unassignedForOptions.find((o) => o.value === v)?.label ?? v;
+}
+
 const showModal = ref(false);
 const editing = ref(null);
 const form = reactive({ name: '', description: '', unassigned_for: '30m' });
+
+const confirmOpen = ref(false);
+const deleteTarget = ref(null);
+const deleting = ref(false);
+
+function askDelete(g) {
+    deleteTarget.value = g;
+    confirmOpen.value = true;
+}
+
+async function confirmDelete() {
+    if (!deleteTarget.value) return;
+    deleting.value = true;
+    try {
+        await groups.destroy(deleteTarget.value.id);
+        ui.pushToast({ severity: 'success', summary: 'Group deleted.' });
+        confirmOpen.value = false;
+        deleteTarget.value = null;
+    } catch {
+        ui.pushToast({ severity: 'error', summary: 'Delete failed.' });
+    } finally {
+        deleting.value = false;
+    }
+}
 
 function openNew() {
     editing.value = null;
@@ -54,11 +96,13 @@ onMounted(() => groups.fetch());
             <Column field="name" header="Name" />
             <Column field="description" header="Description" />
             <Column field="agent_count" header="Agents" />
-            <Column field="unassigned_for" header="Unassigned for" />
+            <Column field="unassigned_for" header="Unassigned for">
+                <template #body="{ data }">{{ unassignedForLabel(data.unassigned_for) }}</template>
+            </Column>
             <Column header="Actions" style="width: 10rem">
                 <template #body="{ data }">
                     <Button icon="pi pi-pencil" text rounded @click="openEdit(data)" />
-                    <Button icon="pi pi-trash" text rounded severity="danger" @click="groups.destroy(data.id)" />
+                    <Button icon="pi pi-trash" text rounded severity="danger" @click="askDelete(data)" />
                 </template>
             </Column>
         </DataTable>
@@ -75,12 +119,25 @@ onMounted(() => groups.fetch());
                 </div>
                 <div>
                     <label class="text-sm font-medium">Unassigned for</label>
-                    <InputText v-model="form.unassigned_for" class="w-full" placeholder="30m, 1h, 1d…" />
+                    <Select v-model="form.unassigned_for" :options="unassignedForOptions"
+                        optionLabel="label" optionValue="value" class="w-full" showClear placeholder="Select…" />
                 </div>
             </div>
             <template #footer>
                 <Button label="Cancel" severity="secondary" outlined @click="showModal = false" />
                 <Button label="Save" @click="submit" />
+            </template>
+        </Dialog>
+
+        <Dialog v-model:visible="confirmOpen" modal header="Delete group" :style="{ width: '24rem' }">
+            <p class="text-sm">
+                Are you sure you want to delete
+                <span class="font-semibold">{{ deleteTarget?.name }}</span>?
+                This cannot be undone.
+            </p>
+            <template #footer>
+                <Button label="Cancel" severity="secondary" outlined @click="confirmOpen = false" :disabled="deleting" />
+                <Button label="Delete" severity="danger" :loading="deleting" @click="confirmDelete" />
             </template>
         </Dialog>
     </div>
