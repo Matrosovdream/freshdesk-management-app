@@ -11,7 +11,7 @@ class ListAgentsTest extends AgentTestCase
         $this->createAgent(['name' => 'C']);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/agents');
+            ->getJson(route('api.admin.agents.index'));
 
         $res->assertOk();
         $res->assertJsonStructure([
@@ -26,7 +26,7 @@ class ListAgentsTest extends AgentTestCase
     public function test_returns_empty_list_when_no_agents_exist(): void
     {
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/agents');
+            ->getJson(route('api.admin.agents.index'));
 
         $res->assertOk();
         $res->assertJsonPath('data.meta.total', 0);
@@ -41,7 +41,7 @@ class ListAgentsTest extends AgentTestCase
         $this->createAgent(['name' => 'Collab','type' => 'collaborator']);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/agents?type=support_agent');
+            ->getJson(route('api.admin.agents.index', ['type' => 'support_agent']));
 
         $res->assertOk();
         $res->assertJsonPath('data.meta.total', 2);
@@ -54,7 +54,7 @@ class ListAgentsTest extends AgentTestCase
         $this->createAgent(['name' => 'Off', 'available' => false]);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/agents?available=1');
+            ->getJson(route('api.admin.agents.index', ['available' => 1]));
 
         $res->assertOk();
         $res->assertJsonPath('data.meta.total', 2);
@@ -67,7 +67,7 @@ class ListAgentsTest extends AgentTestCase
         $this->createAgent(['name' => 'Bob',         'email' => 'bob@example.test']);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/agents?search=alice');
+            ->getJson(route('api.admin.agents.index', ['search' => 'alice']));
 
         $res->assertOk();
         $res->assertJsonPath('data.meta.total', 2);
@@ -79,7 +79,7 @@ class ListAgentsTest extends AgentTestCase
         $this->createAgent(['name' => 'Foo',  'email' => 'foo@example.test']);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/agents?search=unique');
+            ->getJson(route('api.admin.agents.index', ['search' => 'unique']));
 
         $res->assertOk();
         $res->assertJsonPath('data.meta.total', 1);
@@ -92,7 +92,7 @@ class ListAgentsTest extends AgentTestCase
         $this->createAgent(['name' => 'Other',     'email' => 'other@example.test']);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/agents?autocomplete=ac');
+            ->getJson(route('api.admin.agents.index', ['autocomplete' => 'ac']));
 
         $res->assertOk();
         $res->assertJsonPath('data.meta.total', 1);
@@ -104,7 +104,7 @@ class ListAgentsTest extends AgentTestCase
         $a = $this->createAgent(['name' => 'Alpha']);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/agents?sort=%2Bname');
+            ->getJson(route('api.admin.agents.index', ['sort' => '+name']));
 
         $res->assertOk();
         $res->assertJsonPath('data.data.0.id', $a->id);
@@ -118,7 +118,7 @@ class ListAgentsTest extends AgentTestCase
         }
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/agents?per_page=2');
+            ->getJson(route('api.admin.agents.index', ['per_page' => 2]));
 
         $res->assertOk();
         $res->assertJsonCount(2, 'data.data');
@@ -129,7 +129,7 @@ class ListAgentsTest extends AgentTestCase
 
     public function test_unauthenticated_request_is_rejected(): void
     {
-        $res = $this->getJson('/api/v1/admin/agents');
+        $res = $this->getJson(route('api.admin.agents.index'));
 
         $res->assertUnauthorized();
     }
@@ -137,7 +137,7 @@ class ListAgentsTest extends AgentTestCase
     public function test_customer_role_cannot_access_admin_list(): void
     {
         $res = $this->actingAs($this->customer())
-            ->getJson('/api/v1/admin/agents');
+            ->getJson(route('api.admin.agents.index'));
 
         $res->assertForbidden();
     }

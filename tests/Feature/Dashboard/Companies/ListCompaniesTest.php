@@ -11,7 +11,7 @@ class ListCompaniesTest extends CompanyTestCase
         $this->createCompany(['name' => 'Gamma Co']);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/companies');
+            ->getJson(route('api.admin.companies.index'));
 
         $res->assertOk();
         $res->assertJsonStructure([
@@ -26,7 +26,7 @@ class ListCompaniesTest extends CompanyTestCase
     public function test_returns_empty_list_when_no_companies_exist(): void
     {
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/companies');
+            ->getJson(route('api.admin.companies.index'));
 
         $res->assertOk();
         $res->assertJsonPath('data.meta.total', 0);
@@ -40,7 +40,7 @@ class ListCompaniesTest extends CompanyTestCase
         $this->createCompany(['name' => 'Finance One', 'industry' => 'Finance']);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/companies?industry=technology');
+            ->getJson(route('api.admin.companies.index', ['industry' => 'technology']));
 
         $res->assertOk();
         $res->assertJsonPath('data.meta.total', 2);
@@ -53,7 +53,7 @@ class ListCompaniesTest extends CompanyTestCase
         $this->createCompany(['name' => 'Standard',  'account_tier' => 'standard']);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/companies?account_tier=premium');
+            ->getJson(route('api.admin.companies.index', ['account_tier' => 'premium']));
 
         $res->assertOk();
         $res->assertJsonPath('data.meta.total', 2);
@@ -65,7 +65,7 @@ class ListCompaniesTest extends CompanyTestCase
         $this->createCompany(['name' => 'Other Co',    'domains' => ['other.test']]);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/companies?domain=acme.test');
+            ->getJson(route('api.admin.companies.index', ['domain' => 'acme.test']));
 
         $res->assertOk();
         $res->assertJsonPath('data.meta.total', 1);
@@ -79,7 +79,7 @@ class ListCompaniesTest extends CompanyTestCase
         $this->createCompany(['name' => 'Globex']);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/companies?search=acme');
+            ->getJson(route('api.admin.companies.index', ['search' => 'acme']));
 
         $res->assertOk();
         $res->assertJsonPath('data.meta.total', 2);
@@ -92,7 +92,7 @@ class ListCompaniesTest extends CompanyTestCase
         $c = $this->createCompany(['name' => 'Charlie']);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/companies?sort=name');
+            ->getJson(route('api.admin.companies.index', ['sort' => 'name']));
 
         $res->assertOk();
         $res->assertJsonPath('data.data.0.id', $c->id);
@@ -106,7 +106,7 @@ class ListCompaniesTest extends CompanyTestCase
         $b = $this->createCompany(['name' => 'Bravo']);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/companies?sort=%2Bname');
+            ->getJson(route('api.admin.companies.index', ['sort' => '+name']));
 
         $res->assertOk();
         $res->assertJsonPath('data.data.0.id', $a->id);
@@ -150,7 +150,7 @@ class ListCompaniesTest extends CompanyTestCase
         ]);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/companies?search=Counted');
+            ->getJson(route('api.admin.companies.index', ['search' => 'Counted']));
 
         $res->assertOk();
         $res->assertJsonPath('data.data.0.open_tickets_count', 2);
@@ -163,7 +163,7 @@ class ListCompaniesTest extends CompanyTestCase
         }
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/companies?per_page=2');
+            ->getJson(route('api.admin.companies.index', ['per_page' => 2]));
 
         $res->assertOk();
         $res->assertJsonCount(2, 'data.data');
@@ -179,7 +179,7 @@ class ListCompaniesTest extends CompanyTestCase
         }
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/companies?per_page=2&cursor=2&sort=%2Bname');
+            ->getJson(route('api.admin.companies.index', ['per_page' => 2, 'cursor' => 2, 'sort' => '+name']));
 
         $res->assertOk();
         $res->assertJsonCount(2, 'data.data');
@@ -188,7 +188,7 @@ class ListCompaniesTest extends CompanyTestCase
 
     public function test_unauthenticated_request_is_rejected(): void
     {
-        $res = $this->getJson('/api/v1/admin/companies');
+        $res = $this->getJson(route('api.admin.companies.index'));
 
         $res->assertUnauthorized();
     }
@@ -196,7 +196,7 @@ class ListCompaniesTest extends CompanyTestCase
     public function test_customer_role_cannot_access_admin_list(): void
     {
         $res = $this->actingAs($this->customer())
-            ->getJson('/api/v1/admin/companies');
+            ->getJson(route('api.admin.companies.index'));
 
         $res->assertForbidden();
     }

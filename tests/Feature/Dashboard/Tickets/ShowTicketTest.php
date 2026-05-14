@@ -9,7 +9,7 @@ class ShowTicketTest extends TicketTestCase
         $ticket = $this->createTicket(['subject' => 'Login broken']);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/tickets/'.$ticket->id);
+            ->getJson(route('api.admin.tickets.show', $ticket->id));
 
         $res->assertOk();
         $res->assertJsonPath('data.id', $ticket->id);
@@ -19,7 +19,7 @@ class ShowTicketTest extends TicketTestCase
     public function test_show_returns_404_for_unknown_ticket(): void
     {
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/tickets/999999');
+            ->getJson(route('api.admin.tickets.show', 999999));
 
         $res->assertNotFound();
     }
@@ -28,7 +28,7 @@ class ShowTicketTest extends TicketTestCase
     {
         $ticket = $this->createTicket();
 
-        $res = $this->getJson('/api/v1/admin/tickets/'.$ticket->id);
+        $res = $this->getJson(route('api.admin.tickets.show', $ticket->id));
 
         $res->assertUnauthorized();
     }
@@ -38,7 +38,7 @@ class ShowTicketTest extends TicketTestCase
         $ticket = $this->createTicket();
 
         $res = $this->actingAs($this->customer())
-            ->getJson('/api/v1/admin/tickets/'.$ticket->id);
+            ->getJson(route('api.admin.tickets.show', $ticket->id));
 
         $res->assertForbidden();
     }

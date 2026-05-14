@@ -12,7 +12,7 @@ class DeleteAgentTest extends AgentTestCase
         $agent = $this->createAgent(['name' => 'Delete Me']);
 
         $res = $this->actingAs($this->admin())
-            ->deleteJson('/api/v1/admin/agents/'.$agent->id);
+            ->deleteJson(route('api.admin.agents.destroy', $agent->id));
 
         $res->assertOk();
         $res->assertJsonPath('data.id', $agent->id);
@@ -27,11 +27,11 @@ class DeleteAgentTest extends AgentTestCase
         $drop = $this->createAgent(['name' => 'Drop']);
 
         $this->actingAs($this->admin())
-            ->deleteJson('/api/v1/admin/agents/'.$drop->id)
+            ->deleteJson(route('api.admin.agents.destroy', $drop->id))
             ->assertOk();
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/agents');
+            ->getJson(route('api.admin.agents.index'));
 
         $res->assertOk();
         $res->assertJsonPath('data.meta.total', 1);
@@ -43,7 +43,7 @@ class DeleteAgentTest extends AgentTestCase
         $agent = $this->createAgent();
 
         $this->actingAs($this->admin())
-            ->deleteJson('/api/v1/admin/agents/'.$agent->id)
+            ->deleteJson(route('api.admin.agents.destroy', $agent->id))
             ->assertOk();
 
         $log = AuditLog::where('action', 'agent.deleted')
@@ -57,7 +57,7 @@ class DeleteAgentTest extends AgentTestCase
     public function test_delete_returns_404_for_unknown_agent(): void
     {
         $res = $this->actingAs($this->admin())
-            ->deleteJson('/api/v1/admin/agents/999999');
+            ->deleteJson(route('api.admin.agents.destroy', 999999));
 
         $res->assertNotFound();
     }
@@ -67,7 +67,7 @@ class DeleteAgentTest extends AgentTestCase
         $agent = $this->createAgent();
 
         $res = $this->actingAs($this->manager())
-            ->deleteJson('/api/v1/admin/agents/'.$agent->id);
+            ->deleteJson(route('api.admin.agents.destroy', $agent->id));
 
         $res->assertForbidden();
     }
@@ -77,7 +77,7 @@ class DeleteAgentTest extends AgentTestCase
         $agent = $this->createAgent();
 
         $res = $this->actingAs($this->customer())
-            ->deleteJson('/api/v1/admin/agents/'.$agent->id);
+            ->deleteJson(route('api.admin.agents.destroy', $agent->id));
 
         $res->assertForbidden();
     }
@@ -86,7 +86,7 @@ class DeleteAgentTest extends AgentTestCase
     {
         $agent = $this->createAgent();
 
-        $res = $this->deleteJson('/api/v1/admin/agents/'.$agent->id);
+        $res = $this->deleteJson(route('api.admin.agents.destroy', $agent->id));
 
         $res->assertUnauthorized();
     }

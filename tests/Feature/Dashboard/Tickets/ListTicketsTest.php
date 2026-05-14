@@ -11,7 +11,7 @@ class ListTicketsTest extends TicketTestCase
         $this->createTicket(['subject' => 'C']);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/tickets');
+            ->getJson(route('api.admin.tickets.index'));
 
         $res->assertOk();
         $res->assertJsonStructure([
@@ -26,7 +26,7 @@ class ListTicketsTest extends TicketTestCase
     public function test_returns_empty_list_when_no_tickets_exist(): void
     {
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/tickets');
+            ->getJson(route('api.admin.tickets.index'));
 
         $res->assertOk();
         $res->assertJsonPath('data.meta.total', 0);
@@ -40,7 +40,7 @@ class ListTicketsTest extends TicketTestCase
         $this->createTicket(['subject' => 'Resolved',   'status' => 4]);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/tickets?status=2');
+            ->getJson(route('api.admin.tickets.index', ['status' => 2]));
 
         $res->assertOk();
         $res->assertJsonPath('data.meta.total', 2);
@@ -53,7 +53,7 @@ class ListTicketsTest extends TicketTestCase
         $this->createTicket(['priority' => 3]);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/tickets?priority=3');
+            ->getJson(route('api.admin.tickets.index', ['priority' => 3]));
 
         $res->assertOk();
         $res->assertJsonPath('data.meta.total', 2);
@@ -66,7 +66,7 @@ class ListTicketsTest extends TicketTestCase
         $this->createTicket(['responder_id' => null]);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/tickets?responder_id='.$agent->id);
+            ->getJson(route('api.admin.tickets.index', ['responder_id' => $agent->id]));
 
         $res->assertOk();
         $res->assertJsonPath('data.meta.total', 1);
@@ -80,7 +80,7 @@ class ListTicketsTest extends TicketTestCase
         $this->createTicket(['subject' => 'Slow login page']);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/tickets?search=login');
+            ->getJson(route('api.admin.tickets.index', ['search' => 'login']));
 
         $res->assertOk();
         $res->assertJsonPath('data.meta.total', 2);
@@ -93,7 +93,7 @@ class ListTicketsTest extends TicketTestCase
         $newest = $this->createTicket(['subject' => 'Newest', 'fd_created_at' => '2026-05-01 00:00:00']);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/tickets?sort=-fd_created_at');
+            ->getJson(route('api.admin.tickets.index', ['sort' => '-fd_created_at']));
 
         $res->assertOk();
         $res->assertJsonPath('data.data.0.id', $newest->id);
@@ -107,7 +107,7 @@ class ListTicketsTest extends TicketTestCase
         $newest = $this->createTicket(['subject' => 'Newest', 'fd_created_at' => '2026-05-01 00:00:00']);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/tickets?sort=%2Bfd_created_at');
+            ->getJson(route('api.admin.tickets.index', ['sort' => '+fd_created_at']));
 
         $res->assertOk();
         $res->assertJsonPath('data.data.0.id', $oldest->id);
@@ -121,7 +121,7 @@ class ListTicketsTest extends TicketTestCase
         }
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/tickets?per_page=2');
+            ->getJson(route('api.admin.tickets.index', ['per_page' => 2]));
 
         $res->assertOk();
         $res->assertJsonCount(2, 'data.data');
@@ -141,7 +141,7 @@ class ListTicketsTest extends TicketTestCase
         }
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/tickets?per_page=2&cursor=2&sort=%2Bfd_created_at');
+            ->getJson(route('api.admin.tickets.index', ['per_page' => 2, 'cursor' => 2, 'sort' => '+fd_created_at']));
 
         $res->assertOk();
         $res->assertJsonCount(2, 'data.data');
@@ -152,7 +152,7 @@ class ListTicketsTest extends TicketTestCase
 
     public function test_unauthenticated_request_is_rejected(): void
     {
-        $res = $this->getJson('/api/v1/admin/tickets');
+        $res = $this->getJson(route('api.admin.tickets.index'));
 
         $res->assertUnauthorized();
     }
@@ -160,7 +160,7 @@ class ListTicketsTest extends TicketTestCase
     public function test_customer_role_cannot_access_admin_list(): void
     {
         $res = $this->actingAs($this->customer())
-            ->getJson('/api/v1/admin/tickets');
+            ->getJson(route('api.admin.tickets.index'));
 
         $res->assertForbidden();
     }

@@ -9,7 +9,7 @@ class UpdateTicketTest extends TicketTestCase
         $ticket = $this->createTicket(['spam' => false]);
 
         $res = $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/tickets/'.$ticket->id, [
+            ->putJson(route('api.admin.tickets.update', $ticket->id), [
                 'spam' => true,
             ]);
 
@@ -23,7 +23,7 @@ class UpdateTicketTest extends TicketTestCase
         $ticket = $this->createTicket(['spam' => true]);
 
         $res = $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/tickets/'.$ticket->id, [
+            ->putJson(route('api.admin.tickets.update', $ticket->id), [
                 'spam' => false,
             ]);
 
@@ -37,7 +37,7 @@ class UpdateTicketTest extends TicketTestCase
         $ticket = $this->createTicket(['status' => 2, 'priority' => 1]);
 
         $res = $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/tickets/'.$ticket->id, [
+            ->putJson(route('api.admin.tickets.update', $ticket->id), [
                 'status'   => 4,
                 'priority' => 3,
             ]);
@@ -50,7 +50,7 @@ class UpdateTicketTest extends TicketTestCase
     public function test_update_returns_404_for_unknown_ticket(): void
     {
         $res = $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/tickets/999999', ['spam' => true]);
+            ->putJson(route('api.admin.tickets.update', 999999), ['spam' => true]);
 
         $res->assertNotFound();
     }
@@ -59,7 +59,7 @@ class UpdateTicketTest extends TicketTestCase
     {
         $ticket = $this->createTicket();
 
-        $res = $this->putJson('/api/v1/admin/tickets/'.$ticket->id, ['spam' => true]);
+        $res = $this->putJson(route('api.admin.tickets.update', $ticket->id), ['spam' => true]);
 
         $res->assertUnauthorized();
     }

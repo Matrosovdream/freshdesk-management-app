@@ -14,7 +14,7 @@ class ShowAgentTest extends AgentTestCase
         ]);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/agents/'.$agent->id);
+            ->getJson(route('api.admin.agents.show', $agent->id));
 
         $res->assertOk();
         $res->assertJsonPath('data.id', $agent->id);
@@ -32,7 +32,7 @@ class ShowAgentTest extends AgentTestCase
         ]);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/agents/'.$agent->id);
+            ->getJson(route('api.admin.agents.show', $agent->id));
 
         $res->assertOk();
         $res->assertJsonPath('data.avatar_url', 'https://cdn.test/a.png');
@@ -42,7 +42,7 @@ class ShowAgentTest extends AgentTestCase
     public function test_show_returns_404_for_unknown_agent(): void
     {
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/agents/999999');
+            ->getJson(route('api.admin.agents.show', 999999));
 
         $res->assertNotFound();
     }
@@ -51,7 +51,7 @@ class ShowAgentTest extends AgentTestCase
     {
         $agent = $this->createAgent();
 
-        $res = $this->getJson('/api/v1/admin/agents/'.$agent->id);
+        $res = $this->getJson(route('api.admin.agents.show', $agent->id));
 
         $res->assertUnauthorized();
     }
@@ -61,7 +61,7 @@ class ShowAgentTest extends AgentTestCase
         $agent = $this->createAgent();
 
         $res = $this->actingAs($this->customer())
-            ->getJson('/api/v1/admin/agents/'.$agent->id);
+            ->getJson(route('api.admin.agents.show', $agent->id));
 
         $res->assertForbidden();
     }

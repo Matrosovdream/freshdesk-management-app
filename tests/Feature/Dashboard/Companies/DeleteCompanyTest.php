@@ -12,7 +12,7 @@ class DeleteCompanyTest extends CompanyTestCase
         $company = $this->createCompany(['name' => 'Delete Me']);
 
         $res = $this->actingAs($this->admin())
-            ->deleteJson('/api/v1/admin/companies/'.$company->id);
+            ->deleteJson(route('api.admin.companies.destroy', $company->id));
 
         $res->assertOk();
         $res->assertJsonPath('data.id', $company->id);
@@ -28,11 +28,11 @@ class DeleteCompanyTest extends CompanyTestCase
         $b = $this->createCompany(['name' => 'Drop']);
 
         $this->actingAs($this->admin())
-            ->deleteJson('/api/v1/admin/companies/'.$b->id)
+            ->deleteJson(route('api.admin.companies.destroy', $b->id))
             ->assertOk();
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/companies');
+            ->getJson(route('api.admin.companies.index'));
 
         $res->assertOk();
         $res->assertJsonPath('data.meta.total', 1);
@@ -44,7 +44,7 @@ class DeleteCompanyTest extends CompanyTestCase
         $company = $this->createCompany();
 
         $this->actingAs($this->admin())
-            ->deleteJson('/api/v1/admin/companies/'.$company->id)
+            ->deleteJson(route('api.admin.companies.destroy', $company->id))
             ->assertOk();
 
         $log = AuditLog::where('action', 'company.deleted')
@@ -58,7 +58,7 @@ class DeleteCompanyTest extends CompanyTestCase
     public function test_delete_returns_404_for_unknown_company(): void
     {
         $res = $this->actingAs($this->admin())
-            ->deleteJson('/api/v1/admin/companies/999999');
+            ->deleteJson(route('api.admin.companies.destroy', 999999));
 
         $res->assertNotFound();
     }
@@ -68,7 +68,7 @@ class DeleteCompanyTest extends CompanyTestCase
         $company = $this->createCompany();
 
         $res = $this->actingAs($this->manager())
-            ->deleteJson('/api/v1/admin/companies/'.$company->id);
+            ->deleteJson(route('api.admin.companies.destroy', $company->id));
 
         $res->assertForbidden();
     }
@@ -78,7 +78,7 @@ class DeleteCompanyTest extends CompanyTestCase
         $company = $this->createCompany();
 
         $res = $this->actingAs($this->customer())
-            ->deleteJson('/api/v1/admin/companies/'.$company->id);
+            ->deleteJson(route('api.admin.companies.destroy', $company->id));
 
         $res->assertForbidden();
     }
@@ -87,7 +87,7 @@ class DeleteCompanyTest extends CompanyTestCase
     {
         $company = $this->createCompany();
 
-        $res = $this->deleteJson('/api/v1/admin/companies/'.$company->id);
+        $res = $this->deleteJson(route('api.admin.companies.destroy', $company->id));
 
         $res->assertUnauthorized();
     }

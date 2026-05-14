@@ -10,7 +10,7 @@ class AssignTicketTest extends TicketTestCase
         $agent  = $this->createAgent();
 
         $res = $this->actingAs($this->admin())
-            ->postJson('/api/v1/admin/tickets/'.$ticket->id.'/assign', [
+            ->postJson(route('api.admin.tickets.assign', $ticket->id), [
                 'responder_id' => $agent->id,
             ]);
 
@@ -25,7 +25,7 @@ class AssignTicketTest extends TicketTestCase
         $ticket = $this->createTicket(['responder_id' => $agent->id]);
 
         $res = $this->actingAs($this->admin())
-            ->postJson('/api/v1/admin/tickets/'.$ticket->id.'/assign', [
+            ->postJson(route('api.admin.tickets.assign', $ticket->id), [
                 'responder_id' => null,
             ]);
 
@@ -39,7 +39,7 @@ class AssignTicketTest extends TicketTestCase
         $agent = $this->createAgent();
 
         $res = $this->actingAs($this->admin())
-            ->postJson('/api/v1/admin/tickets/999999/assign', [
+            ->postJson(route('api.admin.tickets.assign', 999999), [
                 'responder_id' => $agent->id,
             ]);
 

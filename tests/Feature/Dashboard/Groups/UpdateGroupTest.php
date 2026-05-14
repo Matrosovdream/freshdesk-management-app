@@ -15,7 +15,7 @@ class UpdateGroupTest extends GroupTestCase
         ]);
 
         $res = $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/groups/'.$group->id, [
+            ->putJson(route('api.admin.groups.update', $group->id), [
                 'name'               => 'New Name',
                 'description'        => 'New desc',
                 'auto_ticket_assign' => true,
@@ -37,7 +37,7 @@ class UpdateGroupTest extends GroupTestCase
         $group = $this->createGroup(['agent_ids' => [1, 2]]);
 
         $res = $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/groups/'.$group->id, ['agent_ids' => [7, 8, 9]]);
+            ->putJson(route('api.admin.groups.update', $group->id), ['agent_ids' => [7, 8, 9]]);
 
         $res->assertOk();
         $this->assertSame([7, 8, 9], $group->fresh()->agent_ids);
@@ -49,7 +49,7 @@ class UpdateGroupTest extends GroupTestCase
         $group = $this->createGroup(['freshdesk_id' => 12345]);
 
         $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/groups/'.$group->id, [
+            ->putJson(route('api.admin.groups.update', $group->id), [
                 'name'         => 'Renamed',
                 'freshdesk_id' => 99999,
             ])
@@ -63,7 +63,7 @@ class UpdateGroupTest extends GroupTestCase
         $group = $this->createGroup(['fd_updated_at' => '2026-01-01 00:00:00']);
 
         $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/groups/'.$group->id, ['description' => 'Touched'])
+            ->putJson(route('api.admin.groups.update', $group->id), ['description' => 'Touched'])
             ->assertOk();
 
         $this->assertTrue($group->fresh()->fd_updated_at->greaterThan('2026-01-02 00:00:00'));
@@ -74,7 +74,7 @@ class UpdateGroupTest extends GroupTestCase
         $group = $this->createGroup(['name' => 'Before']);
 
         $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/groups/'.$group->id, ['name' => 'After'])
+            ->putJson(route('api.admin.groups.update', $group->id), ['name' => 'After'])
             ->assertOk();
 
         $log = AuditLog::where('action', 'group.updated')
@@ -90,7 +90,7 @@ class UpdateGroupTest extends GroupTestCase
     public function test_update_returns_404_for_unknown_group(): void
     {
         $res = $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/groups/999999', ['name' => 'Nope']);
+            ->putJson(route('api.admin.groups.update', 999999), ['name' => 'Nope']);
 
         $res->assertNotFound();
     }
@@ -100,7 +100,7 @@ class UpdateGroupTest extends GroupTestCase
         $group = $this->createGroup();
 
         $res = $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/groups/'.$group->id, ['name' => str_repeat('a', 121)]);
+            ->putJson(route('api.admin.groups.update', $group->id), ['name' => str_repeat('a', 121)]);
 
         $res->assertStatus(422);
         $res->assertJsonValidationErrors(['name']);
@@ -111,7 +111,7 @@ class UpdateGroupTest extends GroupTestCase
         $group = $this->createGroup();
 
         $res = $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/groups/'.$group->id, ['escalate_to' => 'foo']);
+            ->putJson(route('api.admin.groups.update', $group->id), ['escalate_to' => 'foo']);
 
         $res->assertStatus(422);
         $res->assertJsonValidationErrors(['escalate_to']);
@@ -122,7 +122,7 @@ class UpdateGroupTest extends GroupTestCase
         $group = $this->createGroup();
 
         $res = $this->actingAs($this->manager())
-            ->putJson('/api/v1/admin/groups/'.$group->id, ['name' => 'Mgr edit']);
+            ->putJson(route('api.admin.groups.update', $group->id), ['name' => 'Mgr edit']);
 
         $res->assertForbidden();
     }
@@ -132,7 +132,7 @@ class UpdateGroupTest extends GroupTestCase
         $group = $this->createGroup();
 
         $res = $this->actingAs($this->customer())
-            ->putJson('/api/v1/admin/groups/'.$group->id, ['name' => 'Nope']);
+            ->putJson(route('api.admin.groups.update', $group->id), ['name' => 'Nope']);
 
         $res->assertForbidden();
     }
@@ -141,7 +141,7 @@ class UpdateGroupTest extends GroupTestCase
     {
         $group = $this->createGroup();
 
-        $res = $this->putJson('/api/v1/admin/groups/'.$group->id, ['name' => 'Anon']);
+        $res = $this->putJson(route('api.admin.groups.update', $group->id), ['name' => 'Anon']);
 
         $res->assertUnauthorized();
     }

@@ -11,7 +11,7 @@ class ListGroupsTest extends GroupTestCase
         $this->createGroup(['name' => 'Charlie']);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/groups');
+            ->getJson(route('api.admin.groups.index'));
 
         $res->assertOk();
         $res->assertJsonStructure([
@@ -26,7 +26,7 @@ class ListGroupsTest extends GroupTestCase
     public function test_returns_empty_list_when_no_groups_exist(): void
     {
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/groups');
+            ->getJson(route('api.admin.groups.index'));
 
         $res->assertOk();
         $res->assertJsonPath('data.meta.total', 0);
@@ -40,7 +40,7 @@ class ListGroupsTest extends GroupTestCase
         $this->createGroup(['name' => 'Sales']);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/groups?search=support');
+            ->getJson(route('api.admin.groups.index', ['search' => 'support']));
 
         $res->assertOk();
         $res->assertJsonPath('data.meta.total', 2);
@@ -51,7 +51,7 @@ class ListGroupsTest extends GroupTestCase
         $group = $this->createGroup(['name' => 'Counted', 'agent_ids' => [10, 20, 30]]);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/groups?search=Counted');
+            ->getJson(route('api.admin.groups.index', ['search' => 'Counted']));
 
         $res->assertOk();
         $res->assertJsonPath('data.data.0.id', $group->id);
@@ -64,7 +64,7 @@ class ListGroupsTest extends GroupTestCase
         $a = $this->createGroup(['name' => 'Alpha']);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/groups?sort=%2Bname');
+            ->getJson(route('api.admin.groups.index', ['sort' => '+name']));
 
         $res->assertOk();
         $res->assertJsonPath('data.data.0.id', $a->id);
@@ -78,7 +78,7 @@ class ListGroupsTest extends GroupTestCase
         $c = $this->createGroup(['name' => 'Charlie']);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/groups?sort=name');
+            ->getJson(route('api.admin.groups.index', ['sort' => 'name']));
 
         $res->assertOk();
         $res->assertJsonPath('data.data.0.id', $c->id);
@@ -93,7 +93,7 @@ class ListGroupsTest extends GroupTestCase
         }
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/groups?per_page=2');
+            ->getJson(route('api.admin.groups.index', ['per_page' => 2]));
 
         $res->assertOk();
         $res->assertJsonCount(2, 'data.data');
@@ -109,7 +109,7 @@ class ListGroupsTest extends GroupTestCase
         }
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/groups?per_page=2&cursor=2&sort=%2Bname');
+            ->getJson(route('api.admin.groups.index', ['per_page' => 2, 'cursor' => 2, 'sort' => '+name']));
 
         $res->assertOk();
         $res->assertJsonCount(2, 'data.data');
@@ -118,7 +118,7 @@ class ListGroupsTest extends GroupTestCase
 
     public function test_unauthenticated_request_is_rejected(): void
     {
-        $res = $this->getJson('/api/v1/admin/groups');
+        $res = $this->getJson(route('api.admin.groups.index'));
 
         $res->assertUnauthorized();
     }
@@ -126,7 +126,7 @@ class ListGroupsTest extends GroupTestCase
     public function test_customer_role_cannot_access_admin_list(): void
     {
         $res = $this->actingAs($this->customer())
-            ->getJson('/api/v1/admin/groups');
+            ->getJson(route('api.admin.groups.index'));
 
         $res->assertForbidden();
     }

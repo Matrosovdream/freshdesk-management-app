@@ -10,7 +10,7 @@ class CreateCompanyTest extends CompanyTestCase
     public function test_admin_can_create_a_company(): void
     {
         $res = $this->actingAs($this->admin())
-            ->postJson('/api/v1/admin/companies', [
+            ->postJson(route('api.admin.companies.store'), [
                 'name'         => 'Newco Inc',
                 'description'  => 'A brand new account',
                 'domains'      => ['newco.test'],
@@ -35,7 +35,7 @@ class CreateCompanyTest extends CompanyTestCase
         $this->createCompany(['freshdesk_id' => 5_000_000]);
 
         $res = $this->actingAs($this->admin())
-            ->postJson('/api/v1/admin/companies', ['name' => 'Auto FD ID Co']);
+            ->postJson(route('api.admin.companies.store'), ['name' => 'Auto FD ID Co']);
 
         $res->assertOk();
         $this->assertSame(5_000_001, (int) Company::where('name', 'Auto FD ID Co')->value('freshdesk_id'));
@@ -44,7 +44,7 @@ class CreateCompanyTest extends CompanyTestCase
     public function test_create_uses_seed_freshdesk_id_when_table_empty(): void
     {
         $res = $this->actingAs($this->admin())
-            ->postJson('/api/v1/admin/companies', ['name' => 'First Co']);
+            ->postJson(route('api.admin.companies.store'), ['name' => 'First Co']);
 
         $res->assertOk();
         $this->assertSame(1_000_000, (int) Company::where('name', 'First Co')->value('freshdesk_id'));
@@ -53,7 +53,7 @@ class CreateCompanyTest extends CompanyTestCase
     public function test_create_writes_audit_log(): void
     {
         $this->actingAs($this->admin())
-            ->postJson('/api/v1/admin/companies', ['name' => 'Audited Co'])
+            ->postJson(route('api.admin.companies.store'), ['name' => 'Audited Co'])
             ->assertOk();
 
         $log = AuditLog::where('action', 'company.created')->latest('id')->first();
@@ -64,7 +64,7 @@ class CreateCompanyTest extends CompanyTestCase
     public function test_create_requires_name(): void
     {
         $res = $this->actingAs($this->admin())
-            ->postJson('/api/v1/admin/companies', ['industry' => 'Tech']);
+            ->postJson(route('api.admin.companies.store'), ['industry' => 'Tech']);
 
         $res->assertStatus(422);
         $res->assertJsonValidationErrors(['name']);
@@ -75,7 +75,7 @@ class CreateCompanyTest extends CompanyTestCase
         $this->createCompany(['name' => 'Dup Co']);
 
         $res = $this->actingAs($this->admin())
-            ->postJson('/api/v1/admin/companies', ['name' => 'Dup Co']);
+            ->postJson(route('api.admin.companies.store'), ['name' => 'Dup Co']);
 
         $res->assertStatus(422);
         $res->assertJsonValidationErrors(['name']);
@@ -84,7 +84,7 @@ class CreateCompanyTest extends CompanyTestCase
     public function test_create_rejects_invalid_renewal_date(): void
     {
         $res = $this->actingAs($this->admin())
-            ->postJson('/api/v1/admin/companies', [
+            ->postJson(route('api.admin.companies.store'), [
                 'name'         => 'Bad Date Co',
                 'renewal_date' => 'not-a-date',
             ]);
@@ -96,7 +96,7 @@ class CreateCompanyTest extends CompanyTestCase
     public function test_create_rejects_non_array_domains(): void
     {
         $res = $this->actingAs($this->admin())
-            ->postJson('/api/v1/admin/companies', [
+            ->postJson(route('api.admin.companies.store'), [
                 'name'    => 'Bad Domain Co',
                 'domains' => 'acme.test',
             ]);
@@ -108,14 +108,14 @@ class CreateCompanyTest extends CompanyTestCase
     public function test_manager_cannot_create_company(): void
     {
         $res = $this->actingAs($this->manager())
-            ->postJson('/api/v1/admin/companies', ['name' => 'Manager Attempt']);
+            ->postJson(route('api.admin.companies.store'), ['name' => 'Manager Attempt']);
 
         $res->assertForbidden();
     }
 
     public function test_unauthenticated_create_is_rejected(): void
     {
-        $res = $this->postJson('/api/v1/admin/companies', ['name' => 'Anon Attempt']);
+        $res = $this->postJson(route('api.admin.companies.store'), ['name' => 'Anon Attempt']);
 
         $res->assertUnauthorized();
     }

@@ -14,7 +14,7 @@ class ListTicketActivityTest extends TicketTestCase
         AuditWriter::log('ticket.updated', 'Ticket', $ticket->id, ['status' => 2], ['status' => 4]);
         AuditWriter::log('ticket.assigned', 'Ticket', $ticket->id, [], []);
 
-        $res = $this->getJson('/api/v1/admin/tickets/'.$ticket->id.'/activity');
+        $res = $this->getJson(route('api.admin.tickets.activity', $ticket->id));
 
         $res->assertOk();
         $res->assertJsonCount(2, 'data');
@@ -25,7 +25,7 @@ class ListTicketActivityTest extends TicketTestCase
         $ticket = $this->createTicket();
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/tickets/'.$ticket->id.'/activity');
+            ->getJson(route('api.admin.tickets.activity', $ticket->id));
 
         $res->assertOk();
         $res->assertJsonCount(0, 'data');
@@ -34,7 +34,7 @@ class ListTicketActivityTest extends TicketTestCase
     public function test_activity_returns_404_for_unknown_ticket(): void
     {
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/tickets/999999/activity');
+            ->getJson(route('api.admin.tickets.activity', 999999));
 
         $res->assertNotFound();
     }

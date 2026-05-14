@@ -13,7 +13,7 @@ class ShowCompanyTest extends CompanyTestCase
         ]);
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/companies/'.$company->id);
+            ->getJson(route('api.admin.companies.show', $company->id));
 
         $res->assertOk();
         $res->assertJsonPath('data.id', $company->id);
@@ -25,7 +25,7 @@ class ShowCompanyTest extends CompanyTestCase
     public function test_show_returns_404_for_unknown_company(): void
     {
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/companies/999999');
+            ->getJson(route('api.admin.companies.show', 999999));
 
         $res->assertNotFound();
     }
@@ -36,7 +36,7 @@ class ShowCompanyTest extends CompanyTestCase
         $company->delete();
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/companies/'.$company->id);
+            ->getJson(route('api.admin.companies.show', $company->id));
 
         $res->assertOk();
         $res->assertJsonPath('data.id', $company->id);
@@ -47,7 +47,7 @@ class ShowCompanyTest extends CompanyTestCase
     {
         $company = $this->createCompany();
 
-        $res = $this->getJson('/api/v1/admin/companies/'.$company->id);
+        $res = $this->getJson(route('api.admin.companies.show', $company->id));
 
         $res->assertUnauthorized();
     }
@@ -57,7 +57,7 @@ class ShowCompanyTest extends CompanyTestCase
         $company = $this->createCompany();
 
         $res = $this->actingAs($this->customer())
-            ->getJson('/api/v1/admin/companies/'.$company->id);
+            ->getJson(route('api.admin.companies.show', $company->id));
 
         $res->assertForbidden();
     }

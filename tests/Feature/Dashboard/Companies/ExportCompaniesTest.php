@@ -18,7 +18,7 @@ class ExportCompaniesTest extends CompanyTestCase
         $this->createCompany(['name' => 'Export Bravo', 'industry' => 'SaaS']);
 
         $res = $this->actingAs($this->admin())
-            ->postJson('/api/v1/admin/companies/export');
+            ->postJson(route('api.admin.companies.export'));
 
         $res->assertOk();
         $res->assertJsonStructure(['data' => ['download_url']]);
@@ -35,7 +35,7 @@ class ExportCompaniesTest extends CompanyTestCase
     public function test_manager_cannot_export(): void
     {
         $res = $this->actingAs($this->manager())
-            ->postJson('/api/v1/admin/companies/export');
+            ->postJson(route('api.admin.companies.export'));
 
         $res->assertForbidden();
     }
@@ -43,14 +43,14 @@ class ExportCompaniesTest extends CompanyTestCase
     public function test_customer_cannot_export(): void
     {
         $res = $this->actingAs($this->customer())
-            ->postJson('/api/v1/admin/companies/export');
+            ->postJson(route('api.admin.companies.export'));
 
         $res->assertForbidden();
     }
 
     public function test_unauthenticated_export_is_rejected(): void
     {
-        $res = $this->postJson('/api/v1/admin/companies/export');
+        $res = $this->postJson(route('api.admin.companies.export'));
 
         $res->assertUnauthorized();
     }

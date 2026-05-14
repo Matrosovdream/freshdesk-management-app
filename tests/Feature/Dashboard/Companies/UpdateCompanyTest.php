@@ -15,7 +15,7 @@ class UpdateCompanyTest extends CompanyTestCase
         ]);
 
         $res = $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/companies/'.$company->id, [
+            ->putJson(route('api.admin.companies.update', $company->id), [
                 'name'         => 'New Name',
                 'industry'     => 'SaaS',
                 'account_tier' => 'premium',
@@ -39,7 +39,7 @@ class UpdateCompanyTest extends CompanyTestCase
         $company = $this->createCompany(['domains' => ['old.test']]);
 
         $res = $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/companies/'.$company->id, [
+            ->putJson(route('api.admin.companies.update', $company->id), [
                 'domains' => ['new-a.test', 'new-b.test'],
             ]);
 
@@ -52,7 +52,7 @@ class UpdateCompanyTest extends CompanyTestCase
         $company = $this->createCompany(['freshdesk_id' => 12345]);
 
         $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/companies/'.$company->id, [
+            ->putJson(route('api.admin.companies.update', $company->id), [
                 'name'         => 'Renamed',
                 'freshdesk_id' => 99999,
             ])
@@ -66,7 +66,7 @@ class UpdateCompanyTest extends CompanyTestCase
         $company = $this->createCompany(['fd_updated_at' => '2026-01-01 00:00:00']);
 
         $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/companies/'.$company->id, ['note' => 'Touched'])
+            ->putJson(route('api.admin.companies.update', $company->id), ['note' => 'Touched'])
             ->assertOk();
 
         $this->assertTrue($company->fresh()->fd_updated_at->greaterThan('2026-01-02 00:00:00'));
@@ -77,7 +77,7 @@ class UpdateCompanyTest extends CompanyTestCase
         $company = $this->createCompany(['name' => 'Audit Before']);
 
         $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/companies/'.$company->id, ['name' => 'Audit After'])
+            ->putJson(route('api.admin.companies.update', $company->id), ['name' => 'Audit After'])
             ->assertOk();
 
         $log = AuditLog::where('action', 'company.updated')
@@ -93,7 +93,7 @@ class UpdateCompanyTest extends CompanyTestCase
     public function test_update_returns_404_for_unknown_company(): void
     {
         $res = $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/companies/999999', ['name' => 'Nope']);
+            ->putJson(route('api.admin.companies.update', 999999), ['name' => 'Nope']);
 
         $res->assertNotFound();
     }
@@ -103,7 +103,7 @@ class UpdateCompanyTest extends CompanyTestCase
         $company = $this->createCompany();
 
         $res = $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/companies/'.$company->id, ['renewal_date' => 'not-a-date']);
+            ->putJson(route('api.admin.companies.update', $company->id), ['renewal_date' => 'not-a-date']);
 
         $res->assertStatus(422);
         $res->assertJsonValidationErrors(['renewal_date']);
@@ -114,7 +114,7 @@ class UpdateCompanyTest extends CompanyTestCase
         $company = $this->createCompany(['name' => 'Manager Edit Me']);
 
         $res = $this->actingAs($this->manager())
-            ->putJson('/api/v1/admin/companies/'.$company->id, ['note' => 'Manager note']);
+            ->putJson(route('api.admin.companies.update', $company->id), ['note' => 'Manager note']);
 
         // Managers have companies.update right; ManagerScope may still hide the row,
         // but the right-middleware should pass.
@@ -126,7 +126,7 @@ class UpdateCompanyTest extends CompanyTestCase
         $company = $this->createCompany();
 
         $res = $this->actingAs($this->customer())
-            ->putJson('/api/v1/admin/companies/'.$company->id, ['note' => 'No way']);
+            ->putJson(route('api.admin.companies.update', $company->id), ['note' => 'No way']);
 
         $res->assertForbidden();
     }
@@ -135,7 +135,7 @@ class UpdateCompanyTest extends CompanyTestCase
     {
         $company = $this->createCompany();
 
-        $res = $this->putJson('/api/v1/admin/companies/'.$company->id, ['name' => 'Anon']);
+        $res = $this->putJson(route('api.admin.companies.update', $company->id), ['name' => 'Anon']);
 
         $res->assertUnauthorized();
     }

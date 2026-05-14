@@ -12,7 +12,7 @@ class DeleteGroupTest extends GroupTestCase
         $group = $this->createGroup(['name' => 'Delete Me']);
 
         $res = $this->actingAs($this->admin())
-            ->deleteJson('/api/v1/admin/groups/'.$group->id);
+            ->deleteJson(route('api.admin.groups.destroy', $group->id));
 
         $res->assertOk();
         $res->assertJsonPath('data.id', $group->id);
@@ -27,11 +27,11 @@ class DeleteGroupTest extends GroupTestCase
         $drop = $this->createGroup(['name' => 'Drop']);
 
         $this->actingAs($this->admin())
-            ->deleteJson('/api/v1/admin/groups/'.$drop->id)
+            ->deleteJson(route('api.admin.groups.destroy', $drop->id))
             ->assertOk();
 
         $res = $this->actingAs($this->admin())
-            ->getJson('/api/v1/admin/groups');
+            ->getJson(route('api.admin.groups.index'));
 
         $res->assertOk();
         $res->assertJsonPath('data.meta.total', 1);
@@ -43,7 +43,7 @@ class DeleteGroupTest extends GroupTestCase
         $group = $this->createGroup();
 
         $this->actingAs($this->admin())
-            ->deleteJson('/api/v1/admin/groups/'.$group->id)
+            ->deleteJson(route('api.admin.groups.destroy', $group->id))
             ->assertOk();
 
         $log = AuditLog::where('action', 'group.deleted')
@@ -57,7 +57,7 @@ class DeleteGroupTest extends GroupTestCase
     public function test_delete_returns_404_for_unknown_group(): void
     {
         $res = $this->actingAs($this->admin())
-            ->deleteJson('/api/v1/admin/groups/999999');
+            ->deleteJson(route('api.admin.groups.destroy', 999999));
 
         $res->assertNotFound();
     }
@@ -67,7 +67,7 @@ class DeleteGroupTest extends GroupTestCase
         $group = $this->createGroup();
 
         $res = $this->actingAs($this->manager())
-            ->deleteJson('/api/v1/admin/groups/'.$group->id);
+            ->deleteJson(route('api.admin.groups.destroy', $group->id));
 
         $res->assertForbidden();
     }
@@ -77,7 +77,7 @@ class DeleteGroupTest extends GroupTestCase
         $group = $this->createGroup();
 
         $res = $this->actingAs($this->customer())
-            ->deleteJson('/api/v1/admin/groups/'.$group->id);
+            ->deleteJson(route('api.admin.groups.destroy', $group->id));
 
         $res->assertForbidden();
     }
@@ -86,7 +86,7 @@ class DeleteGroupTest extends GroupTestCase
     {
         $group = $this->createGroup();
 
-        $res = $this->deleteJson('/api/v1/admin/groups/'.$group->id);
+        $res = $this->deleteJson(route('api.admin.groups.destroy', $group->id));
 
         $res->assertUnauthorized();
     }

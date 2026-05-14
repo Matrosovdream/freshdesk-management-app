@@ -22,7 +22,7 @@ class BulkCreateAgentsTest extends AgentTestCase
              . "bravo@example.test,Bravo Agent,2\n";
 
         $res = $this->actingAs($this->admin())
-            ->post('/api/v1/admin/agents/bulk', [
+            ->post(route('api.admin.agents.bulk_create'), [
                 'file' => $this->csvFile($csv),
             ]);
 
@@ -46,7 +46,7 @@ class BulkCreateAgentsTest extends AgentTestCase
         $csv = "email,name,ticket_scope\nexisting@example.test,New Name,3\n";
 
         $this->actingAs($this->admin())
-            ->post('/api/v1/admin/agents/bulk', ['file' => $this->csvFile($csv)])
+            ->post(route('api.admin.agents.bulk_create'), ['file' => $this->csvFile($csv)])
             ->assertOk();
 
         $agent = Agent::where('email', 'existing@example.test')->first();
@@ -60,7 +60,7 @@ class BulkCreateAgentsTest extends AgentTestCase
         $csv = "email,name\n,No Email\nvalid@example.test,Valid Agent\n";
 
         $res = $this->actingAs($this->admin())
-            ->post('/api/v1/admin/agents/bulk', ['file' => $this->csvFile($csv)]);
+            ->post(route('api.admin.agents.bulk_create'), ['file' => $this->csvFile($csv)]);
 
         $res->assertOk();
         $res->assertJsonPath('data.upserted', 1);
@@ -71,7 +71,7 @@ class BulkCreateAgentsTest extends AgentTestCase
     public function test_bulk_create_requires_file(): void
     {
         $res = $this->actingAs($this->admin())
-            ->postJson('/api/v1/admin/agents/bulk', []);
+            ->postJson(route('api.admin.agents.bulk_create'), []);
 
         $res->assertStatus(422);
         $res->assertJsonValidationErrors(['file']);
@@ -82,7 +82,7 @@ class BulkCreateAgentsTest extends AgentTestCase
         $csv = "email\nmgr@example.test\n";
 
         $res = $this->actingAs($this->manager())
-            ->post('/api/v1/admin/agents/bulk', ['file' => $this->csvFile($csv)]);
+            ->post(route('api.admin.agents.bulk_create'), ['file' => $this->csvFile($csv)]);
 
         $res->assertForbidden();
     }
@@ -92,7 +92,7 @@ class BulkCreateAgentsTest extends AgentTestCase
         $csv = "email\ncust@example.test\n";
 
         $res = $this->actingAs($this->customer())
-            ->post('/api/v1/admin/agents/bulk', ['file' => $this->csvFile($csv)]);
+            ->post(route('api.admin.agents.bulk_create'), ['file' => $this->csvFile($csv)]);
 
         $res->assertForbidden();
     }
@@ -102,7 +102,7 @@ class BulkCreateAgentsTest extends AgentTestCase
         $csv = "email\nanon@example.test\n";
 
         $res = $this->withHeaders(['Accept' => 'application/json'])
-            ->post('/api/v1/admin/agents/bulk', ['file' => $this->csvFile($csv)]);
+            ->post(route('api.admin.agents.bulk_create'), ['file' => $this->csvFile($csv)]);
 
         $res->assertUnauthorized();
     }

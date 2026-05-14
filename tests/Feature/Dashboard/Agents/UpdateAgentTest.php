@@ -16,7 +16,7 @@ class UpdateAgentTest extends AgentTestCase
         ]);
 
         $res = $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/agents/'.$agent->id, [
+            ->putJson(route('api.admin.agents.update', $agent->id), [
                 'name'         => 'New Name',
                 'type'         => 'field_agent',
                 'ticket_scope' => 3,
@@ -42,7 +42,7 @@ class UpdateAgentTest extends AgentTestCase
         $agent = $this->createAgent(['group_ids' => [1, 2]]);
 
         $res = $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/agents/'.$agent->id, ['group_ids' => [5, 6, 7]]);
+            ->putJson(route('api.admin.agents.update', $agent->id), ['group_ids' => [5, 6, 7]]);
 
         $res->assertOk();
         $this->assertSame([5, 6, 7], $agent->fresh()->group_ids);
@@ -53,7 +53,7 @@ class UpdateAgentTest extends AgentTestCase
         $agent = $this->createAgent(['freshdesk_id' => 12345]);
 
         $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/agents/'.$agent->id, [
+            ->putJson(route('api.admin.agents.update', $agent->id), [
                 'name'         => 'Renamed',
                 'freshdesk_id' => 99999,
             ])
@@ -67,7 +67,7 @@ class UpdateAgentTest extends AgentTestCase
         $agent = $this->createAgent(['fd_updated_at' => '2026-01-01 00:00:00']);
 
         $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/agents/'.$agent->id, ['name' => 'Touched'])
+            ->putJson(route('api.admin.agents.update', $agent->id), ['name' => 'Touched'])
             ->assertOk();
 
         $this->assertTrue($agent->fresh()->fd_updated_at->greaterThan('2026-01-02 00:00:00'));
@@ -78,7 +78,7 @@ class UpdateAgentTest extends AgentTestCase
         $agent = $this->createAgent(['name' => 'Before']);
 
         $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/agents/'.$agent->id, ['name' => 'After'])
+            ->putJson(route('api.admin.agents.update', $agent->id), ['name' => 'After'])
             ->assertOk();
 
         $log = AuditLog::where('action', 'agent.updated')
@@ -94,7 +94,7 @@ class UpdateAgentTest extends AgentTestCase
     public function test_update_returns_404_for_unknown_agent(): void
     {
         $res = $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/agents/999999', ['name' => 'Nope']);
+            ->putJson(route('api.admin.agents.update', 999999), ['name' => 'Nope']);
 
         $res->assertNotFound();
     }
@@ -104,7 +104,7 @@ class UpdateAgentTest extends AgentTestCase
         $agent = $this->createAgent();
 
         $res = $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/agents/'.$agent->id, ['email' => 'not-email']);
+            ->putJson(route('api.admin.agents.update', $agent->id), ['email' => 'not-email']);
 
         $res->assertStatus(422);
         $res->assertJsonValidationErrors(['email']);
@@ -115,7 +115,7 @@ class UpdateAgentTest extends AgentTestCase
         $agent = $this->createAgent();
 
         $res = $this->actingAs($this->admin())
-            ->putJson('/api/v1/admin/agents/'.$agent->id, ['ticket_scope' => 9]);
+            ->putJson(route('api.admin.agents.update', $agent->id), ['ticket_scope' => 9]);
 
         $res->assertStatus(422);
         $res->assertJsonValidationErrors(['ticket_scope']);
@@ -126,7 +126,7 @@ class UpdateAgentTest extends AgentTestCase
         $agent = $this->createAgent();
 
         $res = $this->actingAs($this->manager())
-            ->putJson('/api/v1/admin/agents/'.$agent->id, ['name' => 'Mgr edit']);
+            ->putJson(route('api.admin.agents.update', $agent->id), ['name' => 'Mgr edit']);
 
         $res->assertForbidden();
     }
@@ -136,7 +136,7 @@ class UpdateAgentTest extends AgentTestCase
         $agent = $this->createAgent();
 
         $res = $this->actingAs($this->customer())
-            ->putJson('/api/v1/admin/agents/'.$agent->id, ['name' => 'Nope']);
+            ->putJson(route('api.admin.agents.update', $agent->id), ['name' => 'Nope']);
 
         $res->assertForbidden();
     }
@@ -145,7 +145,7 @@ class UpdateAgentTest extends AgentTestCase
     {
         $agent = $this->createAgent();
 
-        $res = $this->putJson('/api/v1/admin/agents/'.$agent->id, ['name' => 'Anon']);
+        $res = $this->putJson(route('api.admin.agents.update', $agent->id), ['name' => 'Anon']);
 
         $res->assertUnauthorized();
     }

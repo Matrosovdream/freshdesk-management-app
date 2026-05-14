@@ -10,7 +10,7 @@ class CreateGroupTest extends GroupTestCase
     public function test_admin_can_create_a_group(): void
     {
         $res = $this->actingAs($this->admin())
-            ->postJson('/api/v1/admin/groups', [
+            ->postJson(route('api.admin.groups.store'), [
                 'name'               => 'New Group',
                 'description'        => 'Created by tests',
                 'unassigned_for'     => '30m',
@@ -34,7 +34,7 @@ class CreateGroupTest extends GroupTestCase
         $this->createGroup(['freshdesk_id' => 5_000_000]);
 
         $res = $this->actingAs($this->admin())
-            ->postJson('/api/v1/admin/groups', ['name' => 'Auto FD ID']);
+            ->postJson(route('api.admin.groups.store'), ['name' => 'Auto FD ID']);
 
         $res->assertOk();
         $this->assertSame(5_000_001, (int) Group::where('name', 'Auto FD ID')->value('freshdesk_id'));
@@ -43,7 +43,7 @@ class CreateGroupTest extends GroupTestCase
     public function test_create_uses_seed_freshdesk_id_when_table_empty(): void
     {
         $res = $this->actingAs($this->admin())
-            ->postJson('/api/v1/admin/groups', ['name' => 'First Group']);
+            ->postJson(route('api.admin.groups.store'), ['name' => 'First Group']);
 
         $res->assertOk();
         $this->assertSame(1_000_000, (int) Group::where('name', 'First Group')->value('freshdesk_id'));
@@ -52,7 +52,7 @@ class CreateGroupTest extends GroupTestCase
     public function test_create_writes_audit_log(): void
     {
         $this->actingAs($this->admin())
-            ->postJson('/api/v1/admin/groups', ['name' => 'Audited Group'])
+            ->postJson(route('api.admin.groups.store'), ['name' => 'Audited Group'])
             ->assertOk();
 
         $log = AuditLog::where('action', 'group.created')->latest('id')->first();
@@ -63,7 +63,7 @@ class CreateGroupTest extends GroupTestCase
     public function test_create_requires_name(): void
     {
         $res = $this->actingAs($this->admin())
-            ->postJson('/api/v1/admin/groups', ['description' => 'No name']);
+            ->postJson(route('api.admin.groups.store'), ['description' => 'No name']);
 
         $res->assertStatus(422);
         $res->assertJsonValidationErrors(['name']);
@@ -72,7 +72,7 @@ class CreateGroupTest extends GroupTestCase
     public function test_create_rejects_too_long_name(): void
     {
         $res = $this->actingAs($this->admin())
-            ->postJson('/api/v1/admin/groups', ['name' => str_repeat('a', 121)]);
+            ->postJson(route('api.admin.groups.store'), ['name' => str_repeat('a', 121)]);
 
         $res->assertStatus(422);
         $res->assertJsonValidationErrors(['name']);
@@ -81,7 +81,7 @@ class CreateGroupTest extends GroupTestCase
     public function test_create_rejects_non_array_agent_ids(): void
     {
         $res = $this->actingAs($this->admin())
-            ->postJson('/api/v1/admin/groups', [
+            ->postJson(route('api.admin.groups.store'), [
                 'name'      => 'Bad Agents',
                 'agent_ids' => 'not-an-array',
             ]);
@@ -93,7 +93,7 @@ class CreateGroupTest extends GroupTestCase
     public function test_create_rejects_non_integer_business_hour_id(): void
     {
         $res = $this->actingAs($this->admin())
-            ->postJson('/api/v1/admin/groups', [
+            ->postJson(route('api.admin.groups.store'), [
                 'name'             => 'Bad BH',
                 'business_hour_id' => 'foo',
             ]);
@@ -105,14 +105,14 @@ class CreateGroupTest extends GroupTestCase
     public function test_manager_cannot_create_group(): void
     {
         $res = $this->actingAs($this->manager())
-            ->postJson('/api/v1/admin/groups', ['name' => 'Mgr try']);
+            ->postJson(route('api.admin.groups.store'), ['name' => 'Mgr try']);
 
         $res->assertForbidden();
     }
 
     public function test_unauthenticated_create_is_rejected(): void
     {
-        $res = $this->postJson('/api/v1/admin/groups', ['name' => 'Anon try']);
+        $res = $this->postJson(route('api.admin.groups.store'), ['name' => 'Anon try']);
 
         $res->assertUnauthorized();
     }

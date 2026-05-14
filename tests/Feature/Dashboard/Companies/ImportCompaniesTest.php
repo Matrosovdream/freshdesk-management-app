@@ -22,7 +22,7 @@ class ImportCompaniesTest extends CompanyTestCase
              . "Imported Bravo,Second,\"bravo.test, bravo-co.test\",SaaS,premium,at-risk\n";
 
         $res = $this->actingAs($this->admin())
-            ->post('/api/v1/admin/companies/import', [
+            ->post(route('api.admin.companies.import'), [
                 'file' => $this->csvFile($csv),
             ]);
 
@@ -45,7 +45,7 @@ class ImportCompaniesTest extends CompanyTestCase
         $csv = "name,industry\nExisting Co,New Industry\n";
 
         $this->actingAs($this->admin())
-            ->post('/api/v1/admin/companies/import', ['file' => $this->csvFile($csv)])
+            ->post(route('api.admin.companies.import'), ['file' => $this->csvFile($csv)])
             ->assertOk();
 
         $this->assertSame('New Industry', Company::where('name', 'Existing Co')->value('industry'));
@@ -57,7 +57,7 @@ class ImportCompaniesTest extends CompanyTestCase
         $csv = "name,industry\n,Tech\nValid Co,SaaS\n";
 
         $res = $this->actingAs($this->admin())
-            ->post('/api/v1/admin/companies/import', ['file' => $this->csvFile($csv)]);
+            ->post(route('api.admin.companies.import'), ['file' => $this->csvFile($csv)]);
 
         $res->assertOk();
         $res->assertJsonPath('data.upserted', 1);
@@ -68,7 +68,7 @@ class ImportCompaniesTest extends CompanyTestCase
     public function test_import_requires_file(): void
     {
         $res = $this->actingAs($this->admin())
-            ->postJson('/api/v1/admin/companies/import', []);
+            ->postJson(route('api.admin.companies.import'), []);
 
         $res->assertStatus(422);
         $res->assertJsonValidationErrors(['file']);
@@ -79,7 +79,7 @@ class ImportCompaniesTest extends CompanyTestCase
         $csv = "name\nManager Try\n";
 
         $res = $this->actingAs($this->manager())
-            ->post('/api/v1/admin/companies/import', ['file' => $this->csvFile($csv)]);
+            ->post(route('api.admin.companies.import'), ['file' => $this->csvFile($csv)]);
 
         $res->assertForbidden();
     }
@@ -89,7 +89,7 @@ class ImportCompaniesTest extends CompanyTestCase
         $csv = "name\nCustomer Try\n";
 
         $res = $this->actingAs($this->customer())
-            ->post('/api/v1/admin/companies/import', ['file' => $this->csvFile($csv)]);
+            ->post(route('api.admin.companies.import'), ['file' => $this->csvFile($csv)]);
 
         $res->assertForbidden();
     }
@@ -99,7 +99,7 @@ class ImportCompaniesTest extends CompanyTestCase
         $csv = "name\nAnon Try\n";
 
         $res = $this->withHeaders(['Accept' => 'application/json'])
-            ->post('/api/v1/admin/companies/import', ['file' => $this->csvFile($csv)]);
+            ->post(route('api.admin.companies.import'), ['file' => $this->csvFile($csv)]);
 
         $res->assertUnauthorized();
     }
