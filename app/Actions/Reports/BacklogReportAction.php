@@ -11,6 +11,9 @@ final class BacklogReportAction
     public function handle(array $data = []): array
     {
         $now = Carbon::now();
+        $userFrom = !empty($data['from']) ? Carbon::parse($data['from'])->startOfDay() : null;
+        $userTo   = !empty($data['to'])   ? Carbon::parse($data['to'])->endOfDay()     : null;
+
         $buckets = [
             '0_1d' => [$now->copy()->subDays(1),  $now],
             '1_3d' => [$now->copy()->subDays(3),  $now->copy()->subDays(1)],
@@ -20,13 +23,16 @@ final class BacklogReportAction
 
         $rows = [];
         foreach ($buckets as $label => [$from, $to]) {
+            $lower = $userFrom && (! $from || $userFrom->gt($from)) ? $userFrom : $from;
+            $upper = $userTo   && (! $to   || $userTo->lt($to))     ? $userTo   : $to;
+
             $q = Ticket::query()->whereIn('status', [2, 3]);
-            if ($from) $q->where('fd_created_at', '>=', $from);
-            if ($to)   $q->where('fd_created_at', '<=', $to);
+            if ($lower) $q->where('fd_created_at', '>=', $lower);
+            if ($upper) $q->where('fd_created_at', '<=', $upper);
             ManagerScope::applyToTickets($q);
             $rows[] = ['bucket' => $label, 'count' => $q->count()];
         }
-        
+
         return ['rows' => $rows];
     }
 }
