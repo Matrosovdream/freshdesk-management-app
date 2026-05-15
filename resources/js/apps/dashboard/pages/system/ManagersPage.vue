@@ -8,6 +8,7 @@ import InputText from 'primevue/inputtext';
 import Password from 'primevue/password';
 import Checkbox from 'primevue/checkbox';
 import MultiSelect from 'primevue/multiselect';
+import Tag from 'primevue/tag';
 import { useManagers } from '@/stores/managers';
 import { useGroups } from '@/stores/groups';
 import { useUi } from '@/stores/ui';
@@ -65,7 +66,12 @@ onMounted(() => Promise.allSettled([managers.fetch(), groups.fetch()]));
             <Column field="name" header="Name" />
             <Column field="email" header="Email" />
             <Column header="Groups">
-                <template #body="{ data }">{{ (data.assigned_groups || []).length }}</template>
+                <template #body="{ data }">
+                    <div class="flex flex-wrap gap-1">
+                        <Tag v-for="g in (data.assigned_groups || [])" :key="g.id ?? g" :value="g.name ?? g" severity="secondary" />
+                        <span v-if="!(data.assigned_groups || []).length" class="text-surface-400 text-xs">—</span>
+                    </div>
+                </template>
             </Column>
             <Column field="last_login_at" header="Last login">
                 <template #body="{ data }">{{ $formatDate(data.last_login_at) }}</template>
