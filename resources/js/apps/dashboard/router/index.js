@@ -35,6 +35,7 @@ import CsatReportPage from '@/pages/reports/CsatReportPage.vue';
 import AuditLogPage from '@/pages/AuditLogPage.vue';
 import FreshdeskConnectionPage from '@/pages/system/FreshdeskConnectionPage.vue';
 import ManagersPage from '@/pages/system/ManagersPage.vue';
+import UsersPage from '@/pages/system/UsersPage.vue';
 import SyncJobsPage from '@/pages/system/SyncJobsPage.vue';
 import SettingsPage from '@/pages/system/SettingsPage.vue';
 import ApiKeysPage from '@/pages/system/ApiKeysPage.vue';
@@ -76,6 +77,7 @@ const routes = [
 
             { path: 'system/freshdesk', name: 'dashboard.system.freshdesk', component: FreshdeskConnectionPage, meta: { auth: true, role: 'superadmin', right: 'system.freshdesk.view' } },
             { path: 'system/managers', name: 'dashboard.system.managers', component: ManagersPage, meta: { auth: true, role: 'superadmin', right: 'system.managers.view' } },
+            { path: 'system/users', name: 'dashboard.system.users', component: UsersPage, meta: { auth: true, role: 'superadmin', right: 'system.users.view' } },
             { path: 'system/sync-jobs', name: 'dashboard.system.sync', component: SyncJobsPage, meta: { auth: true, role: 'superadmin', right: 'system.sync_jobs.view' } },
             { path: 'system/settings', name: 'dashboard.system.settings', component: SettingsPage, meta: { auth: true, role: 'superadmin', right: 'system.settings.view' } },
             { path: 'system/api-keys', name: 'dashboard.system.api-keys', component: ApiKeysPage, meta: { auth: true, role: 'superadmin', right: 'system.api_keys.view' } },

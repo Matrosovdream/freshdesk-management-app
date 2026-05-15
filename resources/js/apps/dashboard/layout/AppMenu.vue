@@ -49,6 +49,7 @@ const model = computed(() => {
         const systemItems = [
             can('system.freshdesk.view')  && { label: 'Freshdesk',  icon: 'pi pi-fw pi-link',      to: '/system/freshdesk' },
             can('system.managers.view')   && { label: 'Managers',   icon: 'pi pi-fw pi-user-edit', to: '/system/managers' },
+            can('system.users.view')      && { label: 'Users',      icon: 'pi pi-fw pi-users',     to: '/system/users' },
             can('system.sync_jobs.view')  && { label: 'Sync jobs',  icon: 'pi pi-fw pi-sync',      to: '/system/sync-jobs' },
             can('system.settings.view')   && { label: 'Settings',   icon: 'pi pi-fw pi-cog',       to: '/system/settings' },
             can('system.api_keys.view')   && { label: 'API keys',   icon: 'pi pi-fw pi-key',       to: '/system/api-keys' },

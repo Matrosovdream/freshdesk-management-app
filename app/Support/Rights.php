@@ -81,6 +81,10 @@ final class Rights
     public const SYSTEM_MANAGERS_CREATE  = 'system.managers.create';
     public const SYSTEM_MANAGERS_UPDATE  = 'system.managers.update';
     public const SYSTEM_MANAGERS_DELETE  = 'system.managers.delete';
+    public const SYSTEM_USERS_VIEW       = 'system.users.view';
+    public const SYSTEM_USERS_CREATE     = 'system.users.create';
+    public const SYSTEM_USERS_UPDATE     = 'system.users.update';
+    public const SYSTEM_USERS_DELETE     = 'system.users.delete';
     public const SYSTEM_SYNC_VIEW        = 'system.sync_jobs.view';
     public const SYSTEM_SYNC_RUN         = 'system.sync_jobs.run';
     public const SYSTEM_SETTINGS_VIEW    = 'system.settings.view';
@@ -146,6 +150,8 @@ final class Rights
                 self::SYSTEM_FRESHDESK_VIEW, self::SYSTEM_FRESHDESK_UPDATE,
                 self::SYSTEM_MANAGERS_VIEW, self::SYSTEM_MANAGERS_CREATE,
                 self::SYSTEM_MANAGERS_UPDATE, self::SYSTEM_MANAGERS_DELETE,
+                self::SYSTEM_USERS_VIEW, self::SYSTEM_USERS_CREATE,
+                self::SYSTEM_USERS_UPDATE, self::SYSTEM_USERS_DELETE,
                 self::SYSTEM_SYNC_VIEW, self::SYSTEM_SYNC_RUN,
                 self::SYSTEM_SETTINGS_VIEW, self::SYSTEM_SETTINGS_UPDATE,
                 self::SYSTEM_API_KEYS_VIEW, self::SYSTEM_API_KEYS_CREATE,

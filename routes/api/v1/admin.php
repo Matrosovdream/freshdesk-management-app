@@ -158,6 +158,14 @@ Route::middleware(['auth:sanctum', 'role:superadmin|manager', 'manager.scope'])-
             Route::post('/{id}/scope',  [Admin\System\ManagerController::class, 'setScope'])->middleware('right:system.managers.update')->name('scope');
         });
 
+        Route::prefix('users')->name('users.')->group(function () {
+            Route::get('/',         [Admin\System\UserController::class, 'index'])->middleware('right:system.users.view')->name('index');
+            Route::post('/',        [Admin\System\UserController::class, 'store'])->middleware('right:system.users.create')->name('store');
+            Route::get('/{user}',   [Admin\System\UserController::class, 'show'])->middleware('right:system.users.view')->name('show');
+            Route::put('/{user}',   [Admin\System\UserController::class, 'update'])->middleware('right:system.users.update')->name('update');
+            Route::delete('/{user}',[Admin\System\UserController::class, 'destroy'])->middleware('right:system.users.delete')->name('destroy');
+        });
+
         Route::prefix('sync-jobs')->name('sync_jobs.')->group(function () {
             Route::get('/',                  [Admin\System\SyncJobController::class, 'index'])->middleware('right:system.sync_jobs.view')->name('index');
             Route::post('/{resource}/run',   [Admin\System\SyncJobController::class, 'run'])->middleware('right:system.sync_jobs.run')->name('run');
