@@ -57,6 +57,13 @@ const model = computed(() => {
         if (systemItems.length) menu.push({ label: 'System', items: systemItems });
     }
 
+    menu.push({
+        label: 'Settings',
+        items: [
+            { label: 'Profile', icon: 'pi pi-fw pi-user', to: '/profile' },
+        ],
+    });
+
     return menu;
 });
 </script>
