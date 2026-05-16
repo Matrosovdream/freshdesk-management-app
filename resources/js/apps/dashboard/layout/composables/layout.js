@@ -1,5 +1,25 @@
 import { computed, reactive } from 'vue';
 
+const THEME_CACHE_KEY = 'dashboard.theme.dark';
+
+export function readCachedDarkMode() {
+    try {
+        const raw = window.localStorage?.getItem(THEME_CACHE_KEY);
+        if (raw === null || raw === undefined) return null;
+        return raw === '1' || raw === 'true';
+    } catch {
+        return null;
+    }
+}
+
+function writeCachedDarkMode(enabled) {
+    try {
+        window.localStorage?.setItem(THEME_CACHE_KEY, enabled ? '1' : '0');
+    } catch {
+        // ignore (private mode, quota, etc.)
+    }
+}
+
 const layoutConfig = reactive({
     preset: 'Aura',
     primary: 'emerald',
@@ -31,8 +51,14 @@ export function useLayout() {
     };
 
     const executeDarkModeToggle = () => {
-        layoutConfig.darkTheme = !layoutConfig.darkTheme;
-        document.documentElement.classList.toggle('app-dark');
+        setDarkMode(!layoutConfig.darkTheme);
+    };
+
+    const setDarkMode = (enabled) => {
+        const value = !!enabled;
+        layoutConfig.darkTheme = value;
+        document.documentElement.classList.toggle('app-dark', value);
+        writeCachedDarkMode(value);
     };
 
     const toggleMenu = () => {
@@ -76,6 +102,7 @@ export function useLayout() {
         layoutState,
         isDarkTheme,
         toggleDarkMode,
+        setDarkMode,
         toggleConfigSidebar,
         toggleMenu,
         hideMobileMenu,

@@ -2,10 +2,13 @@
 
 namespace App\Actions\Auth;
 
+use App\Services\UserSettingsService;
 use Illuminate\Support\Facades\Auth;
 
 final class GetCurrentUserAction
 {
+    public function __construct(private UserSettingsService $settings) {}
+
     public function handle(array $data = []): array
     {
         $user = Auth::user();
@@ -24,6 +27,7 @@ final class GetCurrentUserAction
             'email'           => $user->email,
             'phone'           => $user->phone,
             'avatar'          => $user->avatar,
+            'preferences'     => $this->settings->all($user),
             'roles'           => $user->roles->pluck('slug')->all(),
             'rights'          => method_exists($user, 'rights') ? $user->rights() : [],
             'assigned_groups' => $assignedGroups,

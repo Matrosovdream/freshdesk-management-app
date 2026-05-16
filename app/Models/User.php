@@ -46,6 +46,11 @@ class User extends Authenticatable
         return $this->belongsToMany(Role::class, 'user_roles')->withTimestamps();
     }
 
+    public function userSettings()
+    {
+        return $this->hasMany(UserSetting::class);
+    }
+
     public function managerGroups()
     {
         return $this->belongsToMany(Group::class, 'manager_group_scopes')->withTimestamps();

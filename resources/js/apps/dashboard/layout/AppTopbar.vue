@@ -4,13 +4,25 @@ import { useRouter } from 'vue-router';
 import { useLayout } from '@/layout/composables/layout';
 import { useAuth } from '@/stores/auth';
 import { useUi } from '@/stores/ui';
-import AppConfigurator from './AppConfigurator.vue';
+import { http, ensureCsrf } from '@shared/http';
 import Menu from 'primevue/menu';
 
 const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout();
 const auth = useAuth();
 const ui = useUi();
 const router = useRouter();
+
+async function onToggleDarkMode() {
+    toggleDarkMode();
+    const dark = isDarkTheme.value;
+    try {
+        await ensureCsrf();
+        await http.put('/api/v1/admin/profile', { preferences: { dark_theme: dark } });
+        if (auth.user) auth.user.preferences = { ...(auth.user.preferences || {}), dark_theme: dark };
+    } catch {
+        ui.pushToast({ severity: 'warn', summary: 'Could not save theme preference.' });
+    }
+}
 
 const userMenu = ref();
 const userMenuItems = [
@@ -69,19 +81,9 @@ function toggleUserMenu(event) {
 
         <div class="layout-topbar-actions">
             <div class="layout-config-menu">
-                <button type="button" class="layout-topbar-action" @click="toggleDarkMode">
+                <button type="button" class="layout-topbar-action" @click="onToggleDarkMode">
                     <i :class="['pi', { 'pi-moon': isDarkTheme, 'pi-sun': !isDarkTheme }]"></i>
                 </button>
-                <div class="relative">
-                    <button
-                        v-styleclass="{ selector: '@next', enterFromClass: 'hidden', enterActiveClass: 'p-anchored-overlay-enter-active', leaveToClass: 'hidden', leaveActiveClass: 'p-anchored-overlay-leave-active', hideOnOutsideClick: true }"
-                        type="button"
-                        class="layout-topbar-action layout-topbar-action-highlight"
-                    >
-                        <i class="pi pi-palette"></i>
-                    </button>
-                    <AppConfigurator />
-                </div>
             </div>
 
             <button

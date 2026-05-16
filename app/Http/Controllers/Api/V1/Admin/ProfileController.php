@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api\V1\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\UserSettingsService;
 use App\Support\AuditWriter;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,6 +13,8 @@ use Illuminate\Validation\Rule;
 
 class ProfileController extends Controller
 {
+    public function __construct(private UserSettingsService $settings) {}
+
     public function show(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -22,7 +25,7 @@ class ProfileController extends Controller
             'phone'       => $user->phone,
             'avatar'      => $user->avatar,
             'is_active'   => (bool) $user->is_active,
-            'preferences' => $user->payload['preferences'] ?? null,
+            'preferences' => $this->settings->all($user),
         ]]);
     }
 
@@ -36,6 +39,8 @@ class ProfileController extends Controller
             'password'              => ['sometimes', 'nullable', 'string', 'min:8', 'confirmed'],
             'browser_notifications' => ['sometimes', 'boolean'],
             'email_digest'          => ['sometimes', 'boolean'],
+            'preferences'           => ['sometimes', 'array'],
+            'preferences.dark_theme' => ['sometimes', 'nullable', 'boolean'],
         ]);
 
         $user = $request->user();
@@ -45,6 +50,10 @@ class ProfileController extends Controller
         if (! empty($data['password'])) $fill['password'] = Hash::make($data['password']);
         $user->fill($fill);
         $user->save();
+
+        if (array_key_exists('preferences', $data)) {
+            $this->settings->setMany($user, $data['preferences']);
+        }
 
         AuditWriter::log('profile.updated', 'User', $user->id, $before, $user->only(['name', 'phone', 'avatar']));
 
