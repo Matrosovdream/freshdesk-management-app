@@ -17,11 +17,13 @@ final class ListPortalRequestsAction
         'closed'        => 5,
     ];
 
+    private const PER_PAGE = 10;
+
     public function handle(array $data = []): array
     {
         $user = Auth::user();
         if (! $user || ! $user->freshdesk_contact_id) {
-            return [];
+            return ['items' => [], 'next_cursor' => null];
         }
 
         $contact = Contact::query()
@@ -29,7 +31,7 @@ final class ListPortalRequestsAction
             ->first();
 
         if (! $contact) {
-            return [];
+            return ['items' => [], 'next_cursor' => null];
         }
 
         $query = Ticket::query()->with(['responder:id,name,email,freshdesk_id']);
@@ -56,12 +58,23 @@ final class ListPortalRequestsAction
             });
         }
 
-        $tickets = $query
+        $page = max(1, (int) ($data['cursor'] ?? 1));
+        $offset = ($page - 1) * self::PER_PAGE;
+
+        $tickets = (clone $query)
             ->orderByRaw('COALESCE(fd_updated_at, updated_at) DESC')
-            ->limit(100)
+            ->orderBy('id', 'desc')
+            ->skip($offset)
+            ->take(self::PER_PAGE + 1)
             ->get();
 
-        return $tickets->map(fn (Ticket $t) => $this->mapTicket($t))->all();
+        $hasMore = $tickets->count() > self::PER_PAGE;
+        $items = $tickets->take(self::PER_PAGE);
+
+        return [
+            'items'       => $items->map(fn (Ticket $t) => $this->mapTicket($t))->all(),
+            'next_cursor' => $hasMore ? (string) ($page + 1) : null,
+        ];
     }
 
     private function mapTicket(Ticket $t): array
@@ -74,8 +87,8 @@ final class ListPortalRequestsAction
             'subject'             => $t->subject,
             'status'              => $this->statusLabel((int) $t->status),
             'description_preview' => $preview,
-            'created_at'          => optional($t->fd_created_at ?? $t->created_at)->toIso8601String(),
-            'updated_at'          => optional($t->fd_updated_at ?? $t->updated_at)->toIso8601String(),
+            'created_at'          => ($t->fd_created_at ?? $t->created_at)?->toIso8601String(),
+            'updated_at'          => ($t->fd_updated_at ?? $t->updated_at)?->toIso8601String(),
             'unread'              => false,
         ];
     }

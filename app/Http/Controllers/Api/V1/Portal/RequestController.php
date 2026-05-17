@@ -13,7 +13,12 @@ class RequestController extends Controller
 {
     public function index(Request $request, \App\Actions\Portal\Requests\ListPortalRequestsAction $action): JsonResponse
     {
-        return response()->json(['data' => $action->handle($request->all())]);
+        $result = $action->handle($request->all());
+
+        return response()->json([
+            'items' => $result['items'] ?? [],
+            'meta'  => ['next_cursor' => $result['next_cursor'] ?? null],
+        ]);
     }
 
     public function store(StoreRequest $request, \App\Actions\Portal\Requests\SubmitRequestAction $action): JsonResponse

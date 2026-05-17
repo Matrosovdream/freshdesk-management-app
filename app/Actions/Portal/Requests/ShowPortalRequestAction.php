@@ -34,7 +34,7 @@ final class ShowPortalRequestAction
         }
 
         $allowed = $ticket->requester_id === $contact->id
-            || ($contact->company_id !== null && $ticket->company_id === $contact->company_id);
+            || $contact->company_id !== null && $ticket->company_id === $contact->company_id;
 
         if (! $allowed) {
             throw new AccessDeniedHttpException();
@@ -46,8 +46,8 @@ final class ShowPortalRequestAction
             'status'           => $this->statusLabel((int) $ticket->status),
             'description'      => $ticket->description,
             'description_text' => $ticket->description_text,
-            'created_at'       => optional($ticket->fd_created_at ?? $ticket->created_at)->toIso8601String(),
-            'updated_at'       => optional($ticket->fd_updated_at ?? $ticket->updated_at)->toIso8601String(),
+            'created_at'       => ($ticket->fd_created_at ?? $ticket->created_at)?->toIso8601String(),
+            'updated_at'       => ($ticket->fd_updated_at ?? $ticket->updated_at)?->toIso8601String(),
             'assigned_agent'   => $ticket->responder ? [
                 'id'         => $ticket->responder->id,
                 'name'       => $ticket->responder->name,
@@ -58,7 +58,7 @@ final class ShowPortalRequestAction
                 'body'         => $c->body_text ?? null,
                 'body_html'    => $c->body ?? null,
                 'from_customer' => (bool) ($c->incoming ?? false),
-                'created_at'   => optional($c->fd_created_at ?? $c->created_at)->toIso8601String(),
+                'created_at'   => ($c->fd_created_at ?? $c->created_at)?->toIso8601String(),
                 'author'       => null,
                 'attachments'  => [],
             ])->all(),
