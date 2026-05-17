@@ -23,12 +23,13 @@ class ContactImporter
                 continue;
             }
 
-            if ($this->contactRepo->getByFreshdeskId((int) $payload['id'])) {
-                continue;
-            }
+            $existed = $this->contactRepo->getByFreshdeskId((int) $payload['id']) !== null;
 
             $this->contactRepo->upsertFromFreshdesk($payload);
-            $count++;
+
+            if (!$existed) {
+                $count++;
+            }
         }
 
         $this->linkLocalCompanies();

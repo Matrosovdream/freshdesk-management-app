@@ -11,7 +11,7 @@ use Illuminate\Http\Request;
 
 class RequestController extends Controller
 {
-    public function index(Request $request, \App\Actions\Portal\Requests\ListRequestsAction $action): JsonResponse
+    public function index(Request $request, \App\Actions\Portal\Requests\ListPortalRequestsAction $action): JsonResponse
     {
         return response()->json(['data' => $action->handle($request->all())]);
     }
@@ -21,7 +21,7 @@ class RequestController extends Controller
         return response()->json(['data' => $action->handle($request->validated())]);
     }
 
-    public function show(Request $request, \App\Actions\Portal\Requests\ShowRequestAction $action, string $id): JsonResponse
+    public function show(Request $request, \App\Actions\Portal\Requests\ShowPortalRequestAction $action, string $id): JsonResponse
     {
         return response()->json(['data' => $action->handle($request->all() + ['id' => $id])]);
     }

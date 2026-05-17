@@ -30,13 +30,12 @@ class UserLinkImporter
         $count = 0;
 
         User::query()
-            ->whereNull('freshdesk_contact_id')
             ->orderBy('id')
             ->get()
             ->each(function (User $user) use (&$count) {
                 $contact = Contact::query()->where('email', $user->email)->first();
 
-                if ($contact === null) {
+                if ($contact === null && $user->freshdesk_contact_id === null) {
                     $contact = Contact::query()
                         ->whereNotIn('id', function ($q) {
                             $q->from('users')
@@ -48,6 +47,10 @@ class UserLinkImporter
                 }
 
                 if ($contact === null) {
+                    return;
+                }
+
+                if ((int) $user->freshdesk_contact_id === (int) $contact->freshdesk_id) {
                     return;
                 }
 
