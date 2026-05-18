@@ -243,7 +243,7 @@ async function confirmDelete() {
 
             <div>
                 <label class="block text-sm text-gray-700 mb-1">Email</label>
-                <InputText :modelValue="auth.user?.email || ''" readonly class="w-full" />
+                <InputText :modelValue="auth.user?.email || ''" disabled class="w-full" />
                 <p class="text-xs text-gray-400 mt-1">Contact support to change your email.</p>
             </div>
 
