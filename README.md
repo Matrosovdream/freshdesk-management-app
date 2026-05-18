@@ -4,7 +4,7 @@
 
 A Laravel + Vue dashboard for managing Freshdesk data — tickets, contacts, companies, agents, groups, and reports — with a separate customer portal. The stack runs on PHP-FPM, PostgreSQL, Redis, Horizon, and Reverb, orchestrated via Docker Compose.
 
-## Demo Access Credentials
+## Demo Access Credentials, I know it's safe, for real production site it won't be used!
 
 The seeders provision three demo accounts:
 
