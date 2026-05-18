@@ -14,6 +14,25 @@ The seeders provision three demo accounts:
 
 All accounts accept the password `password` if PIN login is unavailable.
 
+## Freshdesk Developer Account
+
+To work against a real Freshdesk instance you'll need a developer account and an API key.
+
+**Option 1 — Freshworks Developer Account (recommended for integration work):**
+
+1. Sign up at [developers.freshworks.com](https://developers.freshworks.com/docs/getting-started/freshdesk/sign-up/).
+2. From the developer portal, open **Products and Accounts** and spin up a free Freshdesk trial instance.
+3. Note the assigned `*.freshdesk.com` subdomain — this is your API base URL.
+
+**Option 2 — Plain 14-day trial:**
+
+1. Sign up at [freshdesk.com/signup](https://freshdesk.com/signup) (no credit card required).
+2. Verify via the activation email.
+
+**Getting the API key:**
+
+Inside your Freshdesk instance, click your profile picture (top-right) → **Profile Settings** → **View API Key**. Add the subdomain and API key to your `.env` file to enable the integration.
+
 ## Local Development Setup
 
 ### Initial Configuration
