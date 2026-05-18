@@ -3,11 +3,14 @@
 namespace App\Actions\Tickets;
 
 use App\Models\Ticket;
+use App\Services\NotificationService;
 use App\Support\AuditWriter;
 use Illuminate\Support\Facades\DB;
 
 final class CreateTicketAction
 {
+    public function __construct(private NotificationService $notifications) {}
+
     public function handle(array $data = []): array
     {
         $payload = $this->normalise($data);
@@ -23,7 +26,10 @@ final class CreateTicketAction
             return $t;
         });
 
-        return $ticket->fresh(['requester', 'responder', 'group', 'company'])->toArray();
+        $fresh = $ticket->fresh(['requester', 'responder', 'group', 'company']);
+        $this->notifications->sendTicketCreated($fresh);
+
+        return $fresh->toArray();
     }
 
     private function normalise(array $data): array
